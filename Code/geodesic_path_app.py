@@ -207,11 +207,11 @@ class GeodesicPathApp(ctk.CTk):
 
     def manual_start_selection(self) -> None:
         self.start_x_location, self.start_y_location =\
-            self.image_point_selection(self)
+            self.image_point_selection()
 
     def manual_end_selection(self) -> None:
         self.start_x_location, self.start_y_location =\
-            self.image_point_selection(self)
+            self.image_point_selection()
 
     def image_point_selection(self) -> Tuple:
         img = cv2.imread('../Media/' + self.drawing_name, 1)
@@ -228,7 +228,8 @@ class GeodesicPathApp(ctk.CTk):
         cv2.destroyAllWindows()
         return (click_x, click_y)
 
-    def click_event(self, event: int, x: float, y: float) -> None:
+    def click_event(self, event: int, x: float, y: float, flags,
+                    params) -> None:
         if event == cv2.EVENT_LBUTTONDOWN:
             global click_x, click_y
             click_x, click_y = x, y
