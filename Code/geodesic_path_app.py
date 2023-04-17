@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import polyscope as ps
 import potpourri3d as pp3d
+from pynput.keyboard import Key, Controller
 from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
 from typing import Tuple
@@ -385,6 +386,9 @@ class GeodesicPathApp(ctk.CTk):
         '''
         if event == cv2.EVENT_LBUTTONDOWN:
             self.click_x, self.click_y = x, y
+            keyboard = Controller()
+            keyboard.press(Key.enter)
+            keyboard.release(Key.enter)
 
     def load_points(self) -> None:
         '''

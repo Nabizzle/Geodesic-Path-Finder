@@ -18,6 +18,7 @@ setup(
     download_url="https://github.com/Nabizzle/Geodesic-Path-Finder",
     install_requires=["customtkinter==5.1.2", "opencv-python==4.7.0.72",
                       "numpy==1.24.2", "pandas==1.5.3", "polyscope==1.3.1",
-                      "potpourri3d==0.0.8", "jupyterlab==3.5.3"],
+                      "potpourri3d==0.0.8", "pynput==1.7.6",
+                      "jupyterlab==3.5.3"],
     platforms="windows",
 )
