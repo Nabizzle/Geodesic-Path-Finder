@@ -31,6 +31,10 @@ class GeodesicPathApp(ctk.CTk):
         elements
     WIDGET_FONT: tuple (str, int)
         The font for the GUI widgets called as the font name and font size
+    LABEL_FONT: tuple (str, int)
+        The font for the GUI labels called as the font name and font size
+    mesh_options_label: CTkLabel
+        The label for the mesh control row
     mesh_name: str
         The name of the mesh to find the geodesic distance and path on
     drawing_name: str
@@ -53,6 +57,10 @@ class GeodesicPathApp(ctk.CTk):
         using the heat method
     load_mesh_button: CTkButton
         Button to load in the mesh and create the distance solver
+    vertex_data: DataFrame
+        A table of all of the verticies in the mesh
+    uv_data: DataFrame
+        A table of all of the uv data of the mesh
     start_x_location: float
         The x pixel value of the starting location drawing centroid
     start_y_location: float
@@ -69,14 +77,17 @@ class GeodesicPathApp(ctk.CTk):
     set_end_location_button: CTkButton
         Button to get the start centroid locations and set them in the correct
         attributes
+    click_start_point_button: CTkButton
+        Button to manually click the starting locaiton of a path
+    click_end_point_button: CTkButton
+        Button to manually click the ending locaiton of a path
     click_x: float
         The x location the user clicked on on the 2D image
     click_y: float
         The y location the user clicked on on the 2D image
-    vertex_data: DataFrame
-        A table of all of the verticies in the mesh
-    uv_data: DataFrame
-        A table of all of the uv data of the mesh
+    load_points_button: CTkButton
+        Button for loading in starting and ending points on the location
+        drawing from a csv file
     path_verticies: List
         A two element list of the start and end vertex numbers for the location
         drawing centriods
@@ -117,6 +128,7 @@ class GeodesicPathApp(ctk.CTk):
     PADX = 10
     PADY = 10
     WIDGET_FONT = ("Inter", 16)
+    LABEL_FONT = ("Inter", 20)
 
     def __init__(self) -> None:
         '''
@@ -132,6 +144,10 @@ class GeodesicPathApp(ctk.CTk):
         self.resizable(False, False)
 
         # Mesh Selection Dropdown Menu
+        self.mesh_options_label = ctk.CTkLabel(
+            self, text="Select Mesh", font=self.LABEL_FONT)
+        self.mesh_options_label.grid(
+            row=0, column=0, padx=self.PADX, pady=self.PADY)
         self.mesh_name = "Right Arm UV Mapped.obj"
         self.drawing_name = "right arm.png"
         self.text_mesh_data_name = "Right Arm UV Mapped as Text.txt"
@@ -139,7 +155,7 @@ class GeodesicPathApp(ctk.CTk):
         self.mesh_selection_dropdown = ctk.CTkOptionMenu(
             self, values=["Right Arm", "Left Arm"], command=self.set_mesh_name,
             variable=default_arm, font=self.WIDGET_FONT)
-        self.mesh_selection_dropdown.grid(row=0, column=0, padx=self.PADX,
+        self.mesh_selection_dropdown.grid(row=0, column=1, padx=self.PADX,
                                           pady=self.PADY)
 
         # Button to load in the mesh
@@ -149,12 +165,12 @@ class GeodesicPathApp(ctk.CTk):
         self.load_mesh_button = ctk.CTkButton(
             self, text="Load Mesh", command=self.load_mesh,
             font=self.WIDGET_FONT)
-        self.load_mesh_button.grid(row=0, column=1, padx=self.PADX,
+        self.load_mesh_button.grid(row=0, column=2, padx=self.PADX,
                                    pady=self.PADY)
 
         # Centroid entry frame
-        self.start_x_location, self.start_y_location = -1, -1
-        self.end_x_location, self.end_y_location = -1, -1
+        self.start_x_location, self.start_y_location = None, None
+        self.end_x_location, self.end_y_location = None, None
         self.centroid_entry_frame = CentroidEntry(self)
         self.centroid_entry_frame.grid(
             row=1, column=0, rowspan=2, columnspan=2, padx=self.PADX,
@@ -174,13 +190,20 @@ class GeodesicPathApp(ctk.CTk):
         self.click_start_point_button = ctk.CTkButton(
             self, text="Select Start Point",
             command=self.manual_start_selection, font=self.WIDGET_FONT)
-        self.click_start_point_button.grid(row=3, column=0,
-                                           padx=self.PADX, pady=self.PADY)
+        self.click_start_point_button.grid(
+            row=3, column=0, padx=self.PADX, pady=self.PADY)
         self.click_end_point_button = ctk.CTkButton(
             self, text="Select End Point",
             command=self.manual_end_selection, font=self.WIDGET_FONT)
-        self.click_end_point_button.grid(row=3, column=1,
-                                         padx=self.PADX, pady=self.PADY)
+        self.click_end_point_button.grid(
+            row=3, column=1, padx=self.PADX, pady=self.PADY)
+
+        # Load in multiple points from file
+        self.load_points_button = ctk.CTkButton(
+            self, text="Load Points from File", command=self.load_points,
+            font=self.WIDGET_FONT)
+        self.load_points_button.grid(
+            row=3, column=2, padx=self.PADX, pady=self.PADY)
 
         # Find Distances
         self.calculate_distances_button = ctk.CTkButton(
@@ -190,6 +213,7 @@ class GeodesicPathApp(ctk.CTk):
             row=4, column=0, padx=self.PADX, pady=self.PADY)
 
         # Find Geodesic Path
+        self.path_verticies = None
         self.calculate_path_button = ctk.CTkButton(
             self, text="Calculate Path",
             command=self.calculate_path, font=self.WIDGET_FONT)
@@ -356,6 +380,17 @@ class GeodesicPathApp(ctk.CTk):
         if event == cv2.EVENT_LBUTTONDOWN:
             self.click_x, self.click_y = x, y
 
+    def load_points(self) -> None:
+        '''
+        Loads in points to measure between from a file.
+
+        Loads in predetermined points to find geodesic distances between from
+        a csv file and splits them up into starting and ending point pairs.
+        If there is a missing starting or ending point value, the code lets
+        the user know and ommits that row of points from the loaded in data.
+        '''
+        pass
+
     def calculate_distances(self) -> None:
         '''
         Find the distance between the starting and ending points
@@ -363,12 +398,12 @@ class GeodesicPathApp(ctk.CTk):
         Finds the distances between the two points entered to all other points
         and adds it to the visualization.
         '''
-        if self.start_x_location == -1 or self.start_y_location == -1:
+        if self.start_x_location is None or self.start_y_location is None:
             messagebox.showerror(
                 title="Starting Centroid not Entered",
                 message="You have not set a starting point.")
             raise ValueError
-        if self.end_x_location == -1 or self.end_y_location == -1:
+        if self.end_x_location is None or self.end_y_location is None:
             messagebox.showerror(
                 title="Ending Centroid not Entered",
                 message="You have not set a ending point.")
@@ -438,9 +473,20 @@ class GeodesicPathApp(ctk.CTk):
         The path is found using edge flips until the start vertex connects to
         the end vertex
         '''
+        if self.mesh_verticies is None or self.mesh_faces is None:
+            messagebox.showerror(
+                title="Mesh not Loaded",
+                message="You have not loaded in a mesh.")
+            raise ValueError
         # create the path solver
         path_solver = pp3d.EdgeFlipGeodesicSolver(
             self.mesh_verticies, self.mesh_faces)
+
+        if self.path_verticies is None:
+            messagebox.showerror(
+                title="Verticies not Found",
+                message="You have not found the starting and ending verticies")
+            raise ValueError
         # Find the path
         path_points = path_solver.find_geodesic_path_poly(self.path_verticies)
         # Add the path to the visualization
