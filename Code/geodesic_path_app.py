@@ -158,10 +158,11 @@ class GeodesicPathApp(ctk.CTk):
         self.mesh_name = "Male Right Arm UV Mapped.obj"
         self.drawing_name = "right arm.png"
         self.text_mesh_data_name = "Male Right Arm UV Mapped as Text.txt"
-        default_arm = ctk.StringVar(value="Right Arm")
+        default_arm = ctk.StringVar(value="Male Right Arm")
         self.mesh_selection_dropdown = ctk.CTkOptionMenu(
-            self, values=["Male Right Arm", "Female Right Arm", "Left Arm",
-                          "Female Left Arm"], command=self.set_mesh_name,
+            self, values=["Male Right Arm", "Female Right Arm",
+                          "Male Left Arm", "Female Left Arm"],
+            command=self.set_mesh_name,
             variable=default_arm, font=self.WIDGET_FONT)
         self.mesh_selection_dropdown.grid(row=0, column=1, padx=self.PADX,
                                           pady=self.PADY)
@@ -248,10 +249,18 @@ class GeodesicPathApp(ctk.CTk):
             self.mesh_name = "Male Right Arm UV Mapped.obj"
             self.drawing_name = "right arm.png"
             self.text_mesh_data_name = "Male Right Arm UV Mapped as Text.txt"
+        elif choice == "Female Right Arm":
+            self.mesh_name = "Female Right Arm UV Mapped.obj"
+            self.drawing_name = "right arm.png"
+            self.text_mesh_data_name = "Female Right Arm UV Mapped as Text.txt"
         elif choice == "Male Left Arm":
             self.mesh_name = "Male Left Arm UV Mapped.obj"
             self.drawing_name = "left arm.png"
             self.text_mesh_data_name = "Male Left Arm UV Mapped as Text.txt"
+        elif choice == "Female Left Arm":
+            self.mesh_name = "Female Left Arm UV Mapped.obj"
+            self.drawing_name = "left arm.png"
+            self.text_mesh_data_name = "Female Left Arm UV Mapped as Text.txt"
         else:
             messagebox.showerror(
                 title="Unknown Mesh",
