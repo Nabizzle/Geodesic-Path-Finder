@@ -9,6 +9,7 @@ from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
 from typing import Tuple
 from scipy.io import savemat
+from os import path, makedirs
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("dark-blue")
@@ -451,7 +452,9 @@ class GeodesicPathApp(ctk.CTk):
                 "dist", multi_dist, enabled=True, stripe_size=0.01)
 
         data_dict = {"computed_distances": path_distances}
-        savemat("../Data/computed distance.mat", data_dict)
+        if not path.exists("../Data/output"):
+            makedirs("../Data/output")
+        savemat("../Data/output/computed distance.mat", data_dict)
 
         messagebox.showinfo(
             title="Calculation Complete",
@@ -523,7 +526,9 @@ class GeodesicPathApp(ctk.CTk):
                 "Geodesic Path " + str(i), path_points, edges='line',
                 radius=0.002)
 
-        savemat("../Data/calculated_paths.mat", data_dict)
+        if not path.exists("../Data/output"):
+            makedirs("../Data/output")
+        savemat("../Data/output/calculated paths.mat", data_dict)
 
         messagebox.showinfo(
             title="Calculation Complete",
