@@ -54,9 +54,12 @@ class GeodesicPathApp(ctk.CTk):
         Nx3.
     polyscope_mesh: SurfaceMesh
         The mesh in the visualization in polyscope
-    solver: MeshHeatMethodDistanceSolver
+    distance_solver: MeshHeatMethodDistanceSolver
         MeshHeatMethodDistanceSolver object for finding geodesic distances
         using the heat method
+    path_solver: EdgeFlipGeodesicSolver
+        EdgeFlipGeodesicSolver object for showing the geodesic path between two
+        points using edge flips
     load_mesh_button: CTkButton
         Button to load in the mesh and create the distance solver
     uv_array: ndarray
@@ -168,7 +171,8 @@ class GeodesicPathApp(ctk.CTk):
         # Button to load in the mesh
         self.mesh_verticies, self.mesh_faces = None, None
         self.polyscope_mesh = None
-        self.solver = None
+        self.distance_solver = None
+        self.path_solver = None
         self.load_mesh_button = ctk.CTkButton(
             self, text="Load Mesh", command=self.load_mesh,
             font=self.WIDGET_FONT)
@@ -277,12 +281,16 @@ class GeodesicPathApp(ctk.CTk):
         self.mesh_verticies, self.mesh_faces = pp3d.read_mesh(
             "../Models/" + self.mesh_name)
 
+        # create the path solver
+        self.path_solver = pp3d.EdgeFlipGeodesicSolver(
+            self.mesh_verticies, self.mesh_faces)
+
         # Add the mesh to polyscope
         self.polyscope_mesh = ps.register_surface_mesh(
             "mesh", self.mesh_verticies, self.mesh_faces)
 
         # Create the heat method solver for the mesh
-        self.solver = pp3d.MeshHeatMethodDistanceSolver(
+        self.distance_solver = pp3d.MeshHeatMethodDistanceSolver(
             self.mesh_verticies, self.mesh_faces)
 
         # Load in the text version of the model
@@ -440,7 +448,7 @@ class GeodesicPathApp(ctk.CTk):
                     image_x_size, image_y_size)
 
                 # Find distance from the start and end points to all other
-                dist = self.solver.compute_distance_multisource(
+                dist = self.distance_solver.compute_distance_multisource(
                     [start_vertex_id, end_vertex_id])
                 if i == 0:
                     self.path_verticies = np.array(
@@ -464,7 +472,7 @@ class GeodesicPathApp(ctk.CTk):
 
             # Find distance from the start and end points to all other
             self.path_verticies = np.array([[start_vertex_id, end_vertex_id]])
-            dist = self.solver.compute_distance_multisource(
+            dist = self.distance_solver.compute_distance_multisource(
                 [start_vertex_id, end_vertex_id])
             self.path_distances = np.array([dist])
 
@@ -523,9 +531,6 @@ class GeodesicPathApp(ctk.CTk):
                 title="Mesh not Loaded",
                 message="You have not loaded in a mesh.")
             raise ValueError
-        # create the path solver
-        path_solver = pp3d.EdgeFlipGeodesicSolver(
-            self.mesh_verticies, self.mesh_faces)
 
         if self.path_verticies is None:
             messagebox.showerror(
@@ -534,7 +539,7 @@ class GeodesicPathApp(ctk.CTk):
             raise ValueError
         # Find the path
         for i, vertex_set in enumerate(self.path_verticies):
-            path_points = path_solver.find_geodesic_path_poly(
+            path_points = self.path_solver.find_geodesic_path_poly(
                 vertex_set)
             # Add the path to the visualization
             ps.register_curve_network(
