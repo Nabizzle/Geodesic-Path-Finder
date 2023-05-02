@@ -373,7 +373,8 @@ class GeodesicPathApp(ctk.CTk):
         If there is a missing starting or ending point value, the code lets
         the user know and ommits that row of points from the loaded in data.
         '''
-        filename = askopenfilename()
+        filename = askopenfilename(initialdir="../Data",
+                                   filetypes=[("data files", "*.csv")])
         # Load in data and exclude rows with any missing values
         location_data = pd.read_csv(filename).dropna()
         # Split up data into the right class attributes
