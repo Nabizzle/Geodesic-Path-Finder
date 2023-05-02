@@ -4,17 +4,17 @@
 Uses UV mapping of the right and left upper arms of male and female presenting 3D models to find the distances between drawn sensory locations from 2D hand and arm
 images on the 3D arm images. This is done using the [Heat Method](https://dl.acm.org/doi/abs/10.1145/2516971.2516977) to find the distance from any given point to
 any other point on the mesh. Given a starting sensory location, a distance array to every other vertex is found by using the Heat Method along the triangulated arm
-mesh. The end vertex number is then used as the index of the distance array to extract out the geodesic distance between the input points. A visualization of the path
-between the points is also found using [edge flips](https://dl.acm.org/doi/abs/10.1145/3414685.3417839). The mesh can be visualized using
-[Polyscope](https://polyscope.run/py/) in python.
+mesh. The end vertex number is then used as the index of the distance array to extract out the geodesic distance between the input points.
+A visualization of the path between the points is also found using [edge flips](https://dl.acm.org/doi/abs/10.1145/3414685.3417839). The mesh can be visualized
+using [Polyscope](https://polyscope.run/py/) in python.
 
-To convert from the 2D image of location drawings to the 3D x, y, z position, the mesh is [UV mapped](#uv-mapping) to the location drawing so that x and y pxiel values
-on the drawing correspoind to x, y, z vertex values on the 3D mesh.
+To convert from the 2D image of location drawings to the 3D x, y, z position, the mesh is [UV mapped](#uv-mapping) to the location drawing so that x and y pxiel
+values on the drawing correspoind to x, y, z vertex values on the 3D mesh.
 
 > **Note**
 >
-> The edge flip method of showing a path does not guarentee the shortest path along the mesh, it is just a short path. The Heat Method distance should be used for any
-> distance metric.
+> The edge flip method of showing a path does not guarentee the shortest path along the mesh, it is just a short path.
+> The Heat Method distance should be used for any distance metric.
 
 [![GitHub followers](https://img.shields.io/github/followers/Nabizzle?style=social)](https://github.com/Nabizzle)
 ![PyPI - Python Version](https://img.shields.io/badge/python-v3.9-blue)
@@ -60,12 +60,14 @@ verticies is shown here.
 
 A breakdown of how the app works behind the scenes is also in the
 [UV to 3D Path notebook](https://github.com/Nabizzle/Geodesic-Path-Finder/blob/main/Code/UV%20to%203D%20Path.ipynb). A more simple example on the male right arm
-mesh is in the [Right Hand Path Test notebook](https://github.com/Nabizzle/Geodesic-Path-Finder/blob/main/Code/Right%20Hand%20Path%20Test.ipynb) and a simple example
-on a sphere is in the [Simple Geodesic Path Test notebook](https://github.com/Nabizzle/Geodesic-Path-Finder/blob/main/Code/Simple%20Geodesic%20Path%20Test.ipynb).
+mesh is in the [Right Hand Path Test notebook](https://github.com/Nabizzle/Geodesic-Path-Finder/blob/main/Code/Right%20Hand%20Path%20Test.ipynb) and a simple
+example on a sphere is in the
+[Simple Geodesic Path Test notebook](https://github.com/Nabizzle/Geodesic-Path-Finder/blob/main/Code/Simple%20Geodesic%20Path%20Test.ipynb).
 
 # UV Mapping
 UV mapping of the meshes was done in [blender](https://www.blender.org/). This was first done by sculpting male and female anatomy from reference of which
-[Anatomy for Sculptors](https://anatomy4sculptors.com/) was a major source. Once the musculature was sculted, the mesh was fit to the location drawings in two ways depending on the sex of the model.
+[Anatomy for Sculptors](https://anatomy4sculptors.com/) was a major source. Once the musculature was sculted, the mesh was fit to the location drawings in two ways
+depending on the sex of the model.
 
 ## Mapping the male mesh
 For the male mesh, the model was scaled to fit with the location drawings as shown below:
@@ -89,6 +91,32 @@ female body. Shown below is what that mapping looked like when the female mesh w
 <img src=https://github.com/Nabizzle/Geodesic-Path-Finder/blob/main/Media/Female%20Mesh%20Blank.png width=400><img src=https://github.com/Nabizzle/Geodesic-Path-Finder/blob/main/Media/Female%20Mesh%20Mapped.png width=400>
 
 To avoid this issue mismatch between the drawings and the body, I would suggest female location drawings are made and the female mesh is mapped to them.
+
+# Structure of an OBJ File
+The meshes in this project were chosen to be .obj files because they have a nice human readable format that is explained in depth
+[here](https://all3dp.com/1/obj-file-format-3d-printing-cad/). The main idea however is that the obj file is divded into sections for defining the mesh elements.
+
+## Vertex Data
+The first are all of the verticies were a line of the file has the format `v x y z` were `v` tell you that the line is for a vertex and the next three points are
+the x, y, and z points in 3d space.
+
+## Normal Data
+The next relevant lines are designated at `vn x y z` were `vn` means those are the normal vectors of each face and the x, y, and z number are the x, y and z
+magnitudes of the normal vector. These lines are not always necessary as the normal vectors can usually be recalcualted from the face data later in the file.
+
+## UV Data
+The lines that look like `vt u v` or `vt u v w` are the UV or texture data. These are the lines that contain were every vertex point is on the location map. These
+maps are usually called texture maps as an image is wrapped on a mesh to give it more depth. The u coordinate is corresponds to the x direction on the image and the
+v coordinate corresponds to the y direction on the image. sometimes there is a third column of data, w, which is a weighting information, but that is not relevant
+for the meshes we use here.
+
+## Face Data
+Finally the rows with form `f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3` are the culmination of all of the previous data to define the faces. The `f` defines these as face
+rows and each point on a face references an index for a vertex, `v`, uv point, `vt`, and normal vector, `vn`, from the listed data defined above. A face can have 3 or more points that make it use and each column in these rows defines each point of the face.
+
+> **Note**
+> 
+> For this code to work, all of the faces need to be triangles so our face data should only ever have three columns.
 
 # Acknowledgments
 <a href="https://www.flaticon.com/free-icons/technology" title="technology icons">App Icon from winnievinzence</a>
