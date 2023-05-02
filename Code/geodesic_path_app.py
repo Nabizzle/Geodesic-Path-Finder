@@ -59,8 +59,8 @@ class GeodesicPathApp(ctk.CTk):
         using the heat method
     load_mesh_button: CTkButton
         Button to load in the mesh and create the distance solver
-    uv_data: DataFrame
-        A table of all of the uv data of the mesh
+    uv_array: ndarray
+        numpy array of all of the uv data values of a mesh
     start_x_location: float or ndarray
         The x pixel value of the starting location drawing centroid
     start_y_location: float or ndarray
@@ -293,15 +293,15 @@ class GeodesicPathApp(ctk.CTk):
         grouped_mesh_data = mesh_data.groupby(["Type"])
 
         # Get the UV data
-        self.uv_data = grouped_mesh_data.get_group("vt")
-        self.uv_data = self.uv_data.astype(
+        uv_data = grouped_mesh_data.get_group("vt")
+        uv_data = uv_data.astype(
             {"Point 1": float, "Point 2": float, "Point 3": float})
-        self.uv_data.drop("Type", axis=1, inplace=True)
-        self.uv_data.drop("Point 3", axis=1, inplace=True)
-        self.uv_data.rename(columns={"Point 1": "x", "Point 2": "y"},
-                            inplace=True)
-        self.uv_data.reset_index(drop=True, inplace=True)
-        self.uv_data.index += 1
+        uv_data.drop("Type", axis=1, inplace=True)
+        uv_data.drop("Point 3", axis=1, inplace=True)
+        uv_data.rename(columns={"Point 1": "x", "Point 2": "y"}, inplace=True)
+        uv_data.reset_index(drop=True, inplace=True)
+        uv_data.index += 1
+        self.uv_array = uv_data.values  # convert the uv data to a numpy array
 
         # Get the face data
         self.face_data = grouped_mesh_data.get_group("f")
@@ -503,9 +503,8 @@ class GeodesicPathApp(ctk.CTk):
         normalized_x = centroid_x / image_x_size
         normalized_y = centroid_y / image_y_size
         centroid_uv_location = np.array([normalized_x, 1 - normalized_y])
-        uv_array = self.uv_data.values  # convert the uv data to a numpy array
         distances_to_uvs = np.linalg.norm(
-            uv_array - centroid_uv_location, axis=1)
+            self.uv_array - centroid_uv_location, axis=1)
         nearest_uv_id = distances_to_uvs.argsort()[0]
         nearest_vertex_id = int(
             self.face_data.loc[self.face_data["uv"] ==
