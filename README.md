@@ -118,6 +118,18 @@ rows and each point on a face references an index for a vertex, `v`, uv point, `
 > 
 > For this code to work, all of the faces need to be triangles so our face data should only ever have three columns.
 
+# Requirements
+- [Python 3.9.0](https://www.python.org/downloads/release/python-390/)
+  - [potpourri3d](https://github.com/nmwsharp/potpourri3d) and [polyscope](https://polyscope.run/py/) do not work with newer versions of python
+- [customtkinter version: 5.1.2](https://pypi.org/project/customtkinter/0.3/) ![dependency check for customtkinter](https://img.shields.io/librariesio/release/PyPi/customtkinter/5.1.2)
+- [jupyterlab version: 3.5.3](https://pypi.org/project/jupyterlab/3.5.3) ![dependency check for jupyterlab](https://img.shields.io/librariesio/release/PyPi/jupyterlab/3.5.3)
+- [numpy version: 1.24.2](https://pypi.org/project/numpy/1.24.2) ![dependency check for numpy](https://img.shields.io/librariesio/release/PyPi/numpy/1.24.2)
+- [opencv-python version: 4.7.0.72](https://pypi.org/project/opencv-python/4.7.0.72) ![dependency check for opencv](https://img.shields.io/librariesio/release/PyPi/opencv-python/4.7.0.72)
+- [pandas version: 1.5.3](https://pypi.org/project/pandas/1.5.3) ![dependency check for pandas](https://img.shields.io/librariesio/release/PyPi/pandas/1.5.3)
+- [polyscope version: 1.3.1](https://pypi.org/project/polyscope/1.3.1) ![dependency check for polyscope](https://img.shields.io/librariesio/release/PyPi/polyscope/1.3.1)
+- [potpourri3d version: 0.0.8](https://pypi.org/project/potpourri3d/0.0.8) ![dependency check for potpourri3d](https://img.shields.io/librariesio/release/PyPi/potpourri3d/0.0.8)
+- [pynput version: 1.7.6](https://pypi.org/project/pynput/1.7.6) ![dependency check for pynput](https://img.shields.io/librariesio/release/PyPi/pynput/1.7.6)
+
 # Acknowledgments
 <a href="https://www.flaticon.com/free-icons/technology" title="technology icons">App Icon from winnievinzence</a>
 [Anatomy for Sculptors](https://anatomy4sculptors.com/) for amazing references on anatomy.
