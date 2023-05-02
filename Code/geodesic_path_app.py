@@ -299,7 +299,7 @@ class GeodesicPathApp(ctk.CTk):
 
         messagebox.showinfo(
             title="Load Completed", message="Mesh loading finished")
-        
+
         self.calculate_distances_button.configure(state="normal")
         self.calculate_path_button.configure(state="normal")
 
