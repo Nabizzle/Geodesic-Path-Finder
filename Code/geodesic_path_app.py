@@ -8,6 +8,7 @@ from pynput.keyboard import Key, Controller
 from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
 from typing import Tuple
+from scipy.io import savemat
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("dark-blue")
@@ -92,9 +93,6 @@ class GeodesicPathApp(ctk.CTk):
     path_verticies: ndarray
         An array of the start and end vertex numbers for the location drawing
         centriods
-    path_distances: ndarray
-        An array of the distances from one set of verticies to all other
-        verticies as organized as by the vertex numbers.
 
     Methods
     -------
@@ -423,13 +421,13 @@ class GeodesicPathApp(ctk.CTk):
                 if i == 0:
                     self.path_verticies = np.array(
                         [[start_vertex_id, end_vertex_id]])
-                    self.path_distances = np.array([dist])
+                    path_distances = np.array([dist[end_vertex_id]])
                 else:
                     self.path_verticies = np.append(
                         self.path_verticies,
                         [[start_vertex_id, end_vertex_id]], 0)
-                    self.path_distances = np.append(
-                        self.path_distances, [dist], 0)
+                    path_distances = np.append(
+                        path_distances, [dist[end_vertex_id]], 0)
 
         else:
             # Find the UV location of the start and end points
@@ -442,13 +440,17 @@ class GeodesicPathApp(ctk.CTk):
 
             # Find distance from the start and end points to all other
             self.path_verticies = np.array([[start_vertex_id, end_vertex_id]])
-            dist = self.distance_solver.compute_distance_multisource(
+            multi_dist = self.distance_solver.compute_distance_multisource(
                 [start_vertex_id, end_vertex_id])
-            self.path_distances = np.array([dist])
+            dist = self.distance_solver.compute_distance(start_vertex_id)
+            path_distances = np.array([dist[end_vertex_id]])
 
             # Add distances to the visualization
             self.polyscope_mesh.add_distance_quantity(
-                "dist", dist, enabled=True, stripe_size=0.01)
+                "dist", multi_dist, enabled=True, stripe_size=0.01)
+
+        data_dict = {"computed_distances": path_distances}
+        savemat("../Data/computed distance.mat", data_dict)
 
         messagebox.showinfo(
             title="Calculation Complete",
