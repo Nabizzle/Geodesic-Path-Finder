@@ -130,6 +130,9 @@ rows and each point on a face references an index for a vertex, `v`, uv point, `
 - [potpourri3d version: 0.0.8](https://pypi.org/project/potpourri3d/0.0.8) ![dependency check for potpourri3d](https://img.shields.io/librariesio/release/PyPi/potpourri3d/0.0.8)
 - [pynput version: 1.7.6](https://pypi.org/project/pynput/1.7.6) ![dependency check for pynput](https://img.shields.io/librariesio/release/PyPi/pynput/1.7.6)
 
+# Author
+Code and documentation written by [Nabeel Chowdhury](https://www.nabeelchowdhury.com/)
+
 # Acknowledgments
 <a href="https://www.flaticon.com/free-icons/technology" title="technology icons">App Icon from winnievinzence</a>
 [Anatomy for Sculptors](https://anatomy4sculptors.com/) for amazing references on anatomy.
