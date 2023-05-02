@@ -41,8 +41,6 @@ class GeodesicPathApp(ctk.CTk):
         The name of the mesh to find the geodesic distance and path on
     drawing_name: str
         The name of the 2D location drawing template
-    text_mesh_data_name: str
-        The name of the mesh data text file
     mesh_selection_dropdown: CTkOptionMenu
         dropdown to select the name of the mesh to use
     mesh_verticies: ndarray
@@ -156,9 +154,8 @@ class GeodesicPathApp(ctk.CTk):
             self, text="Select Mesh", font=self.LABEL_FONT)
         self.mesh_options_label.grid(
             row=0, column=0, padx=self.PADX, pady=self.PADY)
-        self.mesh_name = "Male Right Arm UV Mapped.obj"
+        self.mesh_name = "Male Right Arm"
         self.drawing_name = "right arm.png"
-        self.text_mesh_data_name = "Male Right Arm UV Mapped as Text.txt"
         default_arm = ctk.StringVar(value="Male Right Arm")
         self.mesh_selection_dropdown = ctk.CTkOptionMenu(
             self, values=["Male Right Arm", "Female Right Arm",
@@ -248,21 +245,17 @@ class GeodesicPathApp(ctk.CTk):
             If the mesh name selected that has not been implimented
         '''
         if choice == "Male Right Arm":
-            self.mesh_name = "Male Right Arm UV Mapped.obj"
+            self.mesh_name = "Male Right Arm"
             self.drawing_name = "right arm.png"
-            self.text_mesh_data_name = "Male Right Arm UV Mapped as Text.txt"
         elif choice == "Female Right Arm":
-            self.mesh_name = "Female Right Arm UV Mapped.obj"
+            self.mesh_name = "Female Right Arm"
             self.drawing_name = "right arm.png"
-            self.text_mesh_data_name = "Female Right Arm UV Mapped as Text.txt"
         elif choice == "Male Left Arm":
-            self.mesh_name = "Male Left Arm UV Mapped.obj"
+            self.mesh_name = "Male Left Arm"
             self.drawing_name = "left arm.png"
-            self.text_mesh_data_name = "Male Left Arm UV Mapped as Text.txt"
         elif choice == "Female Left Arm":
-            self.mesh_name = "Female Left Arm UV Mapped.obj"
+            self.mesh_name = "Female Left Arm"
             self.drawing_name = "left arm.png"
-            self.text_mesh_data_name = "Female Left Arm UV Mapped as Text.txt"
         else:
             messagebox.showerror(
                 title="Unknown Mesh",
@@ -277,13 +270,11 @@ class GeodesicPathApp(ctk.CTk):
         heat method distance solver for the mesh as a stateful solver so
         repeated comutations are quick.
         '''
-        # read in the mesh into the class attributes
-        self.mesh_verticies, self.mesh_faces = pp3d.read_mesh(
-            "../Models/" + self.mesh_name)
-
-        # create the path solver
-        self.path_solver = pp3d.EdgeFlipGeodesicSolver(
-            self.mesh_verticies, self.mesh_faces)
+        # Load in the mesh numpy data
+        imported_data =\
+            np.load("../Data/" + self.mesh_name.lower() + " mesh data.npz")
+        self.mesh_verticies = imported_data["mesh_verticies"]
+        self.mesh_faces = imported_data["mesh_faces"]
 
         # Add the mesh to polyscope
         self.polyscope_mesh = ps.register_surface_mesh(
@@ -293,41 +284,16 @@ class GeodesicPathApp(ctk.CTk):
         self.distance_solver = pp3d.MeshHeatMethodDistanceSolver(
             self.mesh_verticies, self.mesh_faces)
 
-        # Load in the text version of the model
-        mesh_data = pd.read_csv(
-            "../Models/" + self.text_mesh_data_name,
-            names=["Type", "Point 1", "Point 2", "Point 3"],
-            delim_whitespace=True, dtype=str)
-        grouped_mesh_data = mesh_data.groupby(["Type"])
+        # create the path solver
+        self.path_solver = pp3d.EdgeFlipGeodesicSolver(
+            self.mesh_verticies, self.mesh_faces)
 
-        # Get the UV data
-        uv_data = grouped_mesh_data.get_group("vt")
-        uv_data = uv_data.astype(
-            {"Point 1": float, "Point 2": float, "Point 3": float})
-        uv_data.drop("Type", axis=1, inplace=True)
-        uv_data.drop("Point 3", axis=1, inplace=True)
-        uv_data.rename(columns={"Point 1": "x", "Point 2": "y"}, inplace=True)
-        uv_data.reset_index(drop=True, inplace=True)
-        uv_data.index += 1
-        self.uv_array = uv_data.values  # convert the uv data to a numpy array
+        # Load in uv data
+        self.uv_array = imported_data["uv_array"]
 
-        # Get the face data
-        self.face_data = grouped_mesh_data.get_group("f")
-        split_face_data_1 = pd.DataFrame()
-        split_face_data_1[["vertex", "uv", "normal"]] =\
-            self.face_data["Point 1"].str.split("/", expand=True)
-        split_face_data_2 = pd.DataFrame()
-        split_face_data_2[["vertex", "uv", "normal"]] =\
-            self.face_data["Point 2"].str.split("/", expand=True)
-        split_face_data_3 = pd.DataFrame()
-        split_face_data_3[["vertex", "uv", "normal"]] =\
-            self.face_data["Point 3"].str.split("/", expand=True)
-        split_face_data = pd.concat(
-            [split_face_data_1, split_face_data_2, split_face_data_3])
-        split_face_data = split_face_data.astype(
-            {"vertex": float, "uv": float, "normal": float})
-        self.face_data = split_face_data.reset_index(drop=True)
-        self.face_data.index += 1
+        # import the face data
+        self.face_data = pd.DataFrame(imported_data["face_data"],
+                                      columns=["vertex", "uv", "normal"])
 
         messagebox.showinfo(
             title="Load Completed", message="Mesh loading finished")
