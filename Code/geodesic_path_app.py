@@ -514,10 +514,16 @@ class GeodesicPathApp(ctk.CTk):
         for i, vertex_set in enumerate(self.path_verticies):
             path_points = self.path_solver.find_geodesic_path_poly(
                 vertex_set)
+            if i == 0:
+                data_dict = {f"calculated_path_{str(i + 1)}": path_points}
+            else:
+                data_dict[f"calculated_path_{str(i + 1)}"] = path_points
             # Add the path to the visualization
             ps.register_curve_network(
                 "Geodesic Path " + str(i), path_points, edges='line',
                 radius=0.002)
+
+        savemat("../Data/calculated_paths.mat", data_dict)
 
         messagebox.showinfo(
             title="Calculation Complete",
