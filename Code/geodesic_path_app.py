@@ -217,14 +217,16 @@ class GeodesicPathApp(ctk.CTk):
         self.path_verticies = None
         self.calculate_distances_button = ctk.CTkButton(
             self, text="Calculate Distances",
-            command=self.calculate_distances, font=self.WIDGET_FONT)
+            command=self.calculate_distances, font=self.WIDGET_FONT,
+            state="disabled")
         self.calculate_distances_button.grid(
             row=4, column=0, padx=self.PADX, pady=self.PADY)
 
         # Find Geodesic Path
         self.calculate_path_button = ctk.CTkButton(
             self, text="Calculate Path",
-            command=self.calculate_path, font=self.WIDGET_FONT)
+            command=self.calculate_path, font=self.WIDGET_FONT,
+            state="disabled")
         self.calculate_path_button.grid(
             row=4, column=1, padx=self.PADX, pady=self.PADY)
 
@@ -297,6 +299,9 @@ class GeodesicPathApp(ctk.CTk):
 
         messagebox.showinfo(
             title="Load Completed", message="Mesh loading finished")
+        
+        self.calculate_distances_button.configure(state="normal")
+        self.calculate_path_button.configure(state="normal")
 
     def save_start_location(self) -> None:
         ''' Save the start centroid locations '''
