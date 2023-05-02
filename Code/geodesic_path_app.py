@@ -59,8 +59,6 @@ class GeodesicPathApp(ctk.CTk):
         using the heat method
     load_mesh_button: CTkButton
         Button to load in the mesh and create the distance solver
-    vertex_data: DataFrame
-        A table of all of the verticies in the mesh
     uv_data: DataFrame
         A table of all of the uv data of the mesh
     start_x_location: float or ndarray
@@ -293,17 +291,6 @@ class GeodesicPathApp(ctk.CTk):
             names=["Type", "Point 1", "Point 2", "Point 3"],
             delim_whitespace=True, dtype=str)
         grouped_mesh_data = mesh_data.groupby(["Type"])
-
-        # Extract out the vertex data
-        self.vertex_data = grouped_mesh_data.get_group("v")
-        self.vertex_data = self.vertex_data.astype(
-            {"Point 1": float, "Point 2": float, "Point 3": float})
-        self.vertex_data.drop("Type", axis=1, inplace=True)
-        self.vertex_data.rename(
-            columns={"Point 1": "x", "Point 2": "y", "Point 3": "z"},
-            inplace=True)
-        self.vertex_data.reset_index(drop=True, inplace=True)
-        self.vertex_data.index += 1
 
         # Get the UV data
         self.uv_data = grouped_mesh_data.get_group("vt")
