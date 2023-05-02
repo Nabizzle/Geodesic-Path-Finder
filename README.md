@@ -64,6 +64,32 @@ mesh is in the [Right Hand Path Test notebook](https://github.com/Nabizzle/Geode
 on a sphere is in the [Simple Geodesic Path Test notebook](https://github.com/Nabizzle/Geodesic-Path-Finder/blob/main/Code/Simple%20Geodesic%20Path%20Test.ipynb).
 
 # UV Mapping
+UV mapping of the meshes was done in [blender](https://www.blender.org/). This was first done by sculpting male and female anatomy from reference of which
+[Anatomy for Sculptors](https://anatomy4sculptors.com/) was a major source. Once the musculature was sculted, the mesh was fit to the location drawings in two ways depending on the sex of the model.
+
+## Mapping the male mesh
+For the male mesh, the model was scaled to fit with the location drawings as shown below:
+
+<img src=https://github.com/Nabizzle/Geodesic-Path-Finder/blob/main/Media/Reference%20matching%20example.png width=500>
+
+Once the proportions were correct, then seams in the mesh were created to match with landmarks on the location drawings. An example of this on the male hand is
+below:
+
+<img src=https://github.com/Nabizzle/Geodesic-Path-Finder/blob/main/Media/Example%20of%20making%20seams.png width=500>
+
+Finally, these segments of the mesh are projected into the 2D space and moved into place over the location drawings as shown below for the hand:
+
+<img src=https://github.com/Nabizzle/Geodesic-Path-Finder/blob/main/Media/UV%20Mapping%20example.png width=500>
+
+## Mapping the Female Mesh
+For the female mesh, the proportions of the body could not fit with the location drawings as the drawings are of a male figure. As a result, the female mesh had to
+have this step skipped. The seams and mapping of the mesh to the drawings were made in the same way as above, but some areas had to be stretched to map to the
+female body. Shown below is what that mapping looked like when the female mesh was skinned with the location drawings.
+
+<img src=https://github.com/Nabizzle/Geodesic-Path-Finder/blob/main/Media/Female%20Mesh%20Blank.png width=400><img src=https://github.com/Nabizzle/Geodesic-Path-Finder/blob/main/Media/Female%20Mesh%20Mapped.png width=400>
+
+To avoid this issue mismatch between the drawings and the body, I would suggest female location drawings are made and the female mesh is mapped to them.
 
 # Acknowledgments
 <a href="https://www.flaticon.com/free-icons/technology" title="technology icons">App Icon from winnievinzence</a>
+[Anatomy for Sculptors](https://anatomy4sculptors.com/) for amazing references on anatomy.
