@@ -419,8 +419,7 @@ class GeodesicPathApp(ctk.CTk):
                     image_x_size, image_y_size)
 
                 # Find distance from the start and end points to all other
-                dist = self.distance_solver.compute_distance_multisource(
-                    [start_vertex_id, end_vertex_id])
+                dist = self.distance_solver.compute_distance(start_vertex_id)
                 if i == 0:
                     self.path_verticies = np.array(
                         [[start_vertex_id, end_vertex_id]])
@@ -487,7 +486,7 @@ class GeodesicPathApp(ctk.CTk):
         nearest_uv_id = distances_to_uvs.argsort()[0]
         nearest_vertex_id = int(
             self.face_data.loc[self.face_data["uv"] ==
-                               nearest_uv_id]["vertex"].values[0])
+                               nearest_uv_id]["vertex"].values[0]) - 1
         return nearest_vertex_id
 
     def calculate_path(self) -> None:
