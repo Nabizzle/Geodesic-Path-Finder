@@ -64,6 +64,10 @@ class GeodesicPathApp(ctk.CTk):
         Button to load in the mesh and create the distance solver
     uv_array: ndarray
         numpy array of all of the uv data values of a mesh
+    face_data: DataFrame
+        Pandas DataFrame of the data that make up the faces of the mesh. This
+        is made by referencing vertex, uv, and normal vector index values from
+        the rest of the mesh data.
     start_x_location: float or ndarray
         The x pixel value of the starting location drawing centroid
     start_y_location: float or ndarray
@@ -121,9 +125,9 @@ class GeodesicPathApp(ctk.CTk):
         Loads in points to measure between from a file
     uv_to_vertex(centroid_x, centroid_y, image_x_size, image_y_size)
         Converts location drawing pixel value to 3D vertex location
-    calculate_path
+    calculate_path()
         Finds the path between the start and end vertex
-    show_visualization
+    show_visualization()
         Shows the mesh in polyscope
 
     See Also
@@ -390,6 +394,11 @@ class GeodesicPathApp(ctk.CTk):
 
         Finds the distances between the two points entered to all other points
         and adds it to the visualization.
+
+        Raises
+        ------
+        ValueError
+            If you have not given starting or ending points
         '''
         if self.start_x_location is None or self.start_y_location is None:
             messagebox.showerror(
@@ -418,7 +427,7 @@ class GeodesicPathApp(ctk.CTk):
                     self.end_x_location[i], self.end_y_location[i],
                     image_x_size, image_y_size)
 
-                # Find distance from the start and end points to all other
+                # Find distance from the start and end points to all others
                 dist = self.distance_solver.compute_distance(start_vertex_id)
                 if i == 0:
                     self.path_verticies = np.array(
@@ -440,7 +449,7 @@ class GeodesicPathApp(ctk.CTk):
                 self.end_x_location, self.end_y_location, image_x_size,
                 image_y_size)
 
-            # Find distance from the start and end points to all other
+            # Find distance from the start and end points to all others
             self.path_verticies = np.array([[start_vertex_id, end_vertex_id]])
             multi_dist = self.distance_solver.compute_distance_multisource(
                 [start_vertex_id, end_vertex_id])
@@ -501,6 +510,13 @@ class GeodesicPathApp(ctk.CTk):
 
         The path is found using edge flips until the start vertex connects to
         the end vertex
+
+        Raises
+        ------
+        ValueError
+            If you never loaded in a mesh
+        ValueError
+            If you did not find starting and ending verticies
         '''
         if self.mesh_verticies is None or self.mesh_faces is None:
             messagebox.showerror(
@@ -513,6 +529,7 @@ class GeodesicPathApp(ctk.CTk):
                 title="Verticies not Found",
                 message="You have not found the starting and ending verticies")
             raise ValueError
+
         # Find the path
         for i, vertex_set in enumerate(self.path_verticies):
             path_points = self.path_solver.find_geodesic_path_poly(

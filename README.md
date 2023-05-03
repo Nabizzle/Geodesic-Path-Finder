@@ -129,6 +129,7 @@ rows and each point on a face references an index for a vertex, `v`, uv point, `
 - [polyscope version: 1.3.1](https://pypi.org/project/polyscope/1.3.1) ![dependency check for polyscope](https://img.shields.io/librariesio/release/PyPi/polyscope/1.3.1)
 - [potpourri3d version: 0.0.8](https://pypi.org/project/potpourri3d/0.0.8) ![dependency check for potpourri3d](https://img.shields.io/librariesio/release/PyPi/potpourri3d/0.0.8)
 - [pynput version: 1.7.6](https://pypi.org/project/pynput/1.7.6) ![dependency check for pynput](https://img.shields.io/librariesio/release/PyPi/pynput/1.7.6)
+- [scipy version: 1.10.1](https://pypi.org/project/scipy/1.10.1) ![dependency check for scipy](https://img.shields.io/librariesio/release/PyPi/scipy/1.10.1)
 
 # Author
 Code and documentation written by [Nabeel Chowdhury](https://www.nabeelchowdhury.com/)
