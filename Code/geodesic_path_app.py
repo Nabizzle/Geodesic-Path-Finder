@@ -333,7 +333,7 @@ class GeodesicPathApp(ctk.CTk):
         img = cv2.imread('../Media/' + self.drawing_name, 1)
         image_x_size = img.shape[1]
         image_y_size = img.shape[0]
-        scale_factor = 3
+        scale_factor = 9
         img = cv2.resize(
             img, (int(image_x_size / scale_factor),
                   int(image_y_size / scale_factor)))
