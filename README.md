@@ -85,6 +85,9 @@ There are two ways to find distances and paths. The easiest method is to use the
 The analyze_data method takes in a numpy array of starting and ending points. It assumes that the data is in the format of the first two columns being starting x and y pixel values and the last two columns being ending x
 and y pixel values. This is similar to how the app loads in data except this expects a numpy array and does nto parse a csv into this numpy array. After this, the data is used to calculate distances and paths stored in
 the found_distances and found_paths class attributes respectively.
+> **Note**
+> 
+> If you want to load in from a csv instead, use the analyze_data_from_csv method which will bring up a input box to select a csv file.
 
 ### Manually Loading and Analyzing Data
 Data can be manually analyzed by loading in a data numpy array using the load_data method. This method expects the data is in the format of the first two columns being starting x and y pixel values and the last two
@@ -162,6 +165,10 @@ and other grouping lines usually staring with `o` or `s`. These lines should be 
 - [potpourri3d version: 0.0.8](https://pypi.org/project/potpourri3d/0.0.8) ![dependency check for potpourri3d](https://img.shields.io/librariesio/release/PyPi/potpourri3d/0.0.8)
 - [pynput version: 1.7.6](https://pypi.org/project/pynput/1.7.6) ![dependency check for pynput](https://img.shields.io/librariesio/release/PyPi/pynput/1.7.6)
 - [scipy version: 1.10.1](https://pypi.org/project/scipy/1.10.1) ![dependency check for scipy](https://img.shields.io/librariesio/release/PyPi/scipy/1.10.1)
+
+> **Note**
+> 
+> If you only want to use the streamlined code and not use the app, you do not need to install the customtkiner, jupyterlab, polyscope, pynput, or scipy dependencies.
 
 # Author
 Code and documentation written by [Nabeel Chowdhury](https://www.nabeelchowdhury.com/)
