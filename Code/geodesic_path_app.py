@@ -375,8 +375,8 @@ class GeodesicPathApp(ctk.CTk):
 
         Loads in predetermined points to find geodesic distances between from
         a csv file and splits them up into starting and ending point pairs.
-        If there is a missing starting or ending point value, the code lets
-        the user know and ommits that row of points from the loaded in data.
+        If there is a missing starting or ending point value, the code ommits
+        that row of points from the loaded in data.
         '''
         filename = askopenfilename(initialdir="../Data",
                                    filetypes=[("data files", "*.csv")])
