@@ -64,6 +64,33 @@ mesh is in the [Right Hand Path Test notebook](https://github.com/Nabizzle/Geode
 example on a sphere is in the
 [Simple Geodesic Path Test notebook](https://github.com/Nabizzle/Geodesic-Path-Finder/blob/main/Code/Simple%20Geodesic%20Path%20Test.ipynb).
 
+# Streamlined Geodesic Finding Class
+There is a second method implimented for finding geodeisc distances and paths outside of the app. It uses the geodesic_path.py code and impliments a class called GeodesicPath. This class allows the user to instantiate
+the class with the mesh sex and gender and load in data for analysis. This class then saves the found distances and paths as class attributes.
+
+> **Note**
+> 
+> This code was originally written so that it could be called and used completely within Matlab. This is still possible, but it requires most of the [requirements](#requirements) listed below to be installed in the base
+> python environment or for the user to manually give matlab
+[access to files in a anaconda virtual environment](https://www.mathworks.com/matlabcentral/answers/443558-matlab-crashes-when-using-conda-environment-other-than-base), which is not very easy to do.
+
+## Intantiating the Class
+The GeodesicPath class takes sex and side string values. The code currently expects inputs of male or female and right or left for these two inputs respectively. Capitalization does not matter, but spelling does.
+Intantiating the class loads in the designated mesh from the saved mesh data located in the Data folder in the same way the app loads in data.
+
+## Calculating Distances and Path
+There are two ways to find distances and paths. The easiest method is to use the analyze_data method and the harder method is to manually load and analyze distances and the paths.
+
+### Automaticly Analyzing the Data
+The analyze_data method takes in a numpy array of starting and ending points. It assumes that the data is in the format of the first two columns being starting x and y pixel values and the last two columns being ending x
+and y pixel values. This is similar to how the app loads in data except this expects a numpy array and does nto parse a csv into this numpy array. After this, the data is used to calculate distances and paths stored in
+the found_distances and found_paths class attributes respectively.
+
+### Manually Loading and Analyzing Data
+Data can be manually analyzed by loading in a data numpy array using the load_data method. This method expects the data is in the format of the first two columns being starting x and y pixel values and the last two
+columns being ending x and y pixel values. You can then use the calculate_distances and calculate_paths methods to find the geodesic distances and paths. The former method outputs a numpy array of distances in the order
+of input data rows. The latter method outputs a dictionary of string path names and Nx3 numpy arrays of path verticies.
+
 # UV Mapping
 UV mapping of the meshes was done in [blender](https://www.blender.org/). This was first done by sculpting male and female anatomy from reference of which
 [Anatomy for Sculptors](https://anatomy4sculptors.com/) was a major source. Once the musculature was sculted, the mesh was fit to the location drawings in two ways
