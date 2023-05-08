@@ -65,6 +65,8 @@ class GeodesicPath():
         Finds the path between the start and end vertex
     analyze_data(data)
         Loads in data and analyzes it
+    analyzed_data_from_csv
+        Loads in points to measure between from a file
     '''
     def __init__(self, sex: str = "male", side: str = "right") -> None:
         '''
