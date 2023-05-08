@@ -305,7 +305,7 @@ class GeodesicPath():
         print("Path Calculation Finished")
         return data_dict
 
-    def analyze_data(self, data: np.ndarray):
+    def analyze_data(self, data: np.ndarray) -> None:
         '''
         Loads in data and analyzes it
 
@@ -320,15 +320,25 @@ class GeodesicPath():
         self.found_distances = self.calculate_distances()
         self.found_paths = self.calculate_paths()
 
+    def analyze_data_from_csv(self) -> None:
+        '''
+        Loads in points to measure between from a file
+
+        Loads in predetermined points to find geodesic distances between from
+        a csv file. If there is a missing starting or ending point value, the
+        code ommits that row of points from the loaded in data.
+        '''
+        filename = askopenfilename(initialdir="../Data",
+                                   filetypes=[("data files", "*.csv")])
+        # Load in data and exclude rows with any missing values
+        location_data =\
+            pd.read_csv(filename)[["start x", "start y",
+                                   "end x", "end y"]].dropna().to_numpy()
+        # calculate the geodesic information
+        self.analyze_data(location_data)
+
 
 if __name__ == "__main__":
     path_finder = GeodesicPath()
-    # Ask for data file
-    filename = askopenfilename(initialdir="../Data",
-                               filetypes=[("data files", "*.csv")])
-    # Load in data and exclude rows with any missing values
-    location_data = pd.read_csv(filename).dropna().to_numpy()
-    # calculate the geodesic information
-    path_finder.analyze_data(location_data)
-    # display the information in the console
+    path_finder.analyze_data_from_csv()
     print(path_finder.found_distances)
