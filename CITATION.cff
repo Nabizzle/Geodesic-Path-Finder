@@ -1,0 +1,13 @@
+cff-version: 1.0.0
+message: "If you use this software or modify it, please cite it as below."
+authors:
+- family-names: "Chowdhury"
+  given-names: "Nabeel"
+  orcid: "https://orcid.org/0000-0002-6452-7835"
+- family-names: "Tyler"
+  given-names: "Dustin"
+  orcid: "https://orcid.org/0000-0002-2298-8510"
+title: "Geodesic-Path-Finder"
+version: 1.2.0
+date-released: 2023-05-08
+url: "https://github.com/CaseFNI/Geodesic-Path-Finder/releases/tag/v1.2.0"
