@@ -100,7 +100,7 @@ highest_boundary_index = len(combined_uv_array) - len(inside_boundary_ids)
 triangles = np.array(triangulated_uvs.simplices)
 reduced_triangles = []
 for row in triangles:
-    if not np.all(row <= highest_boundary_index):
+    if np.all(row > highest_boundary_index):
         reduced_triangles.append(row)
 
 reduced_triangles = np.array(reduced_triangles)
