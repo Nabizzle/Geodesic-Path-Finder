@@ -35,7 +35,32 @@ def find_uv_index_kdtree(border_points: pd.DataFrame, image_x_size: int,
     return indicies
 
 
-def heron_area(p1: np.ndarray, p2: np.ndarray, p3: np.ndarray) -> float:
+def find_triangle_sides(p1: np.ndarray, p2: np.ndarray,
+                        p3: np.ndarray) -> np.ndarray:
+    '''
+    Finds the area of a triangle usign Heron's formula
+
+    Parameters
+    ----------
+    p1: np.ndarray
+        The first (x, y) point of the triangle
+    p2: np.ndarray
+        The second (x, y) point of the triangle
+    p3: np.ndarray
+        The thrid (x, y) point of the triangle
+
+    Returns
+    -------
+    np.ndarray
+        Sides of the triangle [a, b, c]
+    '''
+    a = np.linalg.norm(p1 - p2)
+    b = np.linalg.norm(p2 - p3)
+    c = np.linalg.norm(p1 - p3)
+    return np.array([[a, b, c]])
+
+
+def heron_area(sides: np.ndarray) -> float:
     '''
     Finds the area of a triangle usign Heron's formula
 
@@ -53,14 +78,15 @@ def heron_area(p1: np.ndarray, p2: np.ndarray, p3: np.ndarray) -> float:
     float
         The area of the triangle
     '''
-    a = np.linalg.norm(p1 - p2)
-    b = np.linalg.norm(p2 - p3)
-    c = np.linalg.norm(p1 - p3)
+    a = sides[0]
+    b = sides[1]
+    c = sides[2]
     s = (a + b + c) / 2
     return math.sqrt(s * (s - a) * (s - b) * (s - c))
 
 
-def remove_outliers(data: np.ndarray, deviations: int = 3) -> np.ndarray:
+def remove_area_outliers(area_data: np.ndarray,
+                         deviations: int = 3) -> np.ndarray:
     '''
     Remove outliers using the distance away from the median
 
@@ -70,7 +96,7 @@ def remove_outliers(data: np.ndarray, deviations: int = 3) -> np.ndarray:
 
     Parameters
     ----------
-    data: np.ndarray
+    area_data: np.ndarray
     The areas of all of the calculated triangles
     deviations: int
     The number of deviations away from the median to use as an outlier
@@ -80,7 +106,7 @@ def remove_outliers(data: np.ndarray, deviations: int = 3) -> np.ndarray:
     cleaned_data: np.ndarray
     The data with outliers removed
     '''
-    distance_from_median = np.abs(data - np.median(data))
+    distance_from_median = np.abs(area_data - np.median(area_data))
     # find the median absolute deviate (similar to standard deviation)
     median_absolute_deviation = np.median(distance_from_median)
     if median_absolute_deviation > 0:
@@ -89,8 +115,41 @@ def remove_outliers(data: np.ndarray, deviations: int = 3) -> np.ndarray:
     else:
         deviations_away_from_median = np.zeros(len(distance_from_median))
 
-    cleaned_data = data[deviations_away_from_median < deviations]
-    return (cleaned_data, deviations_away_from_median)
+    cleaned_data = area_data[deviations_away_from_median < deviations]
+    return cleaned_data
+
+
+def remove_side_outliers(sides_array: np.ndarray,
+                         deviations: int = 3) -> np.ndarray:
+    '''
+    Remove outliers using the distance away from the median
+
+    The median is a more robust measure compared to the mean as the mean is
+    biased by outliers. The median absolute deviation is also a substitute for
+    the standard deviation when using the median.
+
+    Parameters
+    ----------
+    sides_array: np.ndarray
+    The side lengths of all of the calculated triangles
+    deviations: int
+    The number of deviations away from the median to use as an outlier
+
+    Returns
+    -------
+    cleaned_data: np.ndarray
+    The data with outliers removed
+    '''
+    distance_from_median = np.abs(sides_array - np.median(sides_array))
+    median_absolute_deviation = np.median(distance_from_median)
+    if median_absolute_deviation > 0:
+        deviations_away_from_median =\
+            distance_from_median / median_absolute_deviation
+    else:
+        deviations_away_from_median = np.zeros((len(distance_from_median), 3))
+    cleaned_data =\
+        sides_array[np.all(deviations_away_from_median < deviations, axis=1)]
+    return cleaned_data
 
 
 # Load in data
@@ -181,16 +240,27 @@ for index, value in enumerate(indicies_of_sorted_indicies):
 location_surface = np.array(mesh_verticies[vertex_ids])
 
 # Find the Surface Area of the 3D Location Drawing
-# Calculate the Area Using Heron's Formula
-area_array = np.array([])
+# Find the lengths of the triangle sides (used for outlier detection later)
+sides_array = np.empty((0, 3))
 for tri in reduced_triangles:
     p1 = location_surface[tri[0]]
     p2 = location_surface[tri[1]]
     p3 = location_surface[tri[2]]
-    area_array = np.append(area_array, heron_area(p1, p2, p3))
+    sides_array = np.concatenate((sides_array,
+                                  find_triangle_sides(p1, p2, p3)), axis=0)
+# Calculate the Area Using Heron's Formula
+area_array = np.array([])
+for sides in sides_array:
+    area_array = np.append(area_array, heron_area(sides))
 
 # Remore large triangles as outliers
-deviations = 75
-cleaned_area_array, deviations_away_from_median =\
-    remove_outliers(area_array, deviations)
-print(f"The area of the location is {np.sum(cleaned_area_array)} scene units")
+deviations = 50
+cleaned_area_array = remove_area_outliers(area_array, deviations)
+cleaned_sides_array = remove_side_outliers(sides_array, deviations)
+print(f"The area of the location is {np.sum(cleaned_area_array)} scene units" +
+      f" after removing area outliers {deviations} deviations away")
+sides_area_array = np.array([])
+for sides in cleaned_sides_array:
+    sides_area_array = np.append(sides_area_array, heron_area(sides))
+print(f"The area of the location is {np.sum(sides_area_array)} scene units" +
+      f" after removing side length outliers {deviations} deviations away")
