@@ -83,36 +83,52 @@ inside_boundary = boundary.contains_points(uv_array)
 # Triangluate the Found Mesh
 # This is so we can apply the same triangulation to the 3D mesh
 
-location_uvs = np.array(uv_array[cleaned_boundary_uv_array])
-location_uvs = np.concatenate((location_uvs, uv_array[inside_boundary]))
+inside_boundary_ids = [i for i, x in enumerate(inside_boundary) if x]
+combined_uv_array = cleaned_boundary_uv_array.copy()
+combined_uv_array.extend(inside_boundary_ids)
+
+combined_uv_array_unique = []
+[combined_uv_array_unique.append(x) for x in combined_uv_array
+ if x not in combined_uv_array_unique]
+
+combined_uv_array = np.array(combined_uv_array_unique)
+location_uvs = np.array(uv_array[combined_uv_array])
 triangulated_uvs = Delaunay(location_uvs)
 
 # Eliminate Triangles that Only Connect to Border Points
-highest_boundary_index = len(cleaned_boundary_uv_array)
+highest_boundary_index = len(combined_uv_array) - len(inside_boundary_ids)
 triangles = np.array(triangulated_uvs.simplices)
 reduced_triangles = []
 for row in triangles:
     if not np.all(row <= highest_boundary_index):
         reduced_triangles.append(row)
+
 reduced_triangles = np.array(reduced_triangles)
 
 # Translate the UV Triangulation to the 3D Mesh
-# Find the Boundary Verticies
-boundary_vertex_ids = []
-for index in cleaned_boundary_uv_array:
-    boundary_vertex_ids.append(int(face_data.loc[face_data["uv"] == index]
-                                   ["vertex"].values[0]))
+# Sort the UV Indicies
+indicies_of_sorted_indicies = np.argsort(combined_uv_array)
+sorted_indicies = combined_uv_array[indicies_of_sorted_indicies]
 
-# Find Boundary Vertex Indicies
-# Get indicies of true values in inside_boundary
-inside_boundary_ids = [i for i, x in enumerate(inside_boundary) if x]
-inner_vertex_ids = [int(face_data.loc[face_data["uv"] == index]
-                    ["vertex"].values[0]) for index in inside_boundary_ids]
+# Make a look up table of one for one UV to Vertex Points
+face_data_reduced = face_data[["vertex", "uv"]].drop_duplicates()
+face_data_reduced = face_data_reduced.sort_values(by=['uv'])
+
+# Find all Verticies at Once and Reorganize the Array Based on the Sort
+
+face_data_reduced[face_data_reduced['uv'].isin(combined_uv_array)]
+
+sorted_vertex_ids =\
+    face_data_reduced[face_data_reduced['uv']
+                      .isin(combined_uv_array)]["vertex"].to_numpy()
+
+vertex_ids = np.empty((len(combined_uv_array))).astype(int)
+
+for index, value in enumerate(indicies_of_sorted_indicies):
+    vertex_ids[value] = sorted_vertex_ids[index]
 
 # Get the Vertex Positions using the Indicies
-location_surface = np.array(mesh_verticies[boundary_vertex_ids])
-location_surface = np.concatenate((location_surface,
-                                   mesh_verticies[inner_vertex_ids]))
+location_surface = np.array(mesh_verticies[vertex_ids])
 
 # Find the Surface Area of the 3D Location Drawing
 # Calculate the Area Using Heron's Formula
