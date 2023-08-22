@@ -1,0 +1,5 @@
+data: "../Data/male right arm mesh data.npz"
+text_file: "../Models/Male Right Arm UV Mapped as Text.txt"
+obj_file: "../Models/Male Right Arm UV Mapped.obj"
+blend_file: "../Models/Male Right Arm UV Mapping.blend"
+base_mesh: "Models/Male Base Mesh.blend"

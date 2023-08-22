@@ -1,0 +1,6 @@
+defaults:
+  - models: male_right
+  - drawing_templates: right
+  - _self_
+
+data_path: "../Data/"
