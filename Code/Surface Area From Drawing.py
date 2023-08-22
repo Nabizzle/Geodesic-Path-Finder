@@ -29,7 +29,7 @@ def find_uv_index_kdtree(border_points: pd.DataFrame, image_x_size: int,
     indicies: int
     The row numbers of the closest uv to the 2D border point list
     '''
-    data_array = border_points.to_numpy(dtype=float)
+    data_array = border_points.copy().to_numpy(dtype=float)
     data_array[:, 0] = data_array[:, 0] / image_x_size
     data_array[:, 1] = 1 - (data_array[:, 1] / image_y_size)
     _, indicies = KDTree(uv_array).query(data_array)
