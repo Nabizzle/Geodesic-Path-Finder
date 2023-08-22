@@ -6,6 +6,7 @@ import matplotlib.path as mpltPath
 import pandas as pd
 import cv2
 import pyvista as pv
+from hydra import initialize, compose
 
 
 # Define Function to Find UV vertex indicies
@@ -35,13 +36,15 @@ def find_uv_index_kdtree(border_points: pd.DataFrame, image_x_size: int,
     return indicies
 
 
+with initialize(version_base=None, config_path="config"):
+    cfg = compose(config_name='config.yaml')
 # Load in data
-data = pd.read_csv("../Data/ExampleBoundaryTable.csv")
+data = pd.read_csv(f"{cfg.data_path}ExampleBoundaryTable.csv")
 data.head()
 
 # Load in Male Right Arm Mesh Data
 imported_data =\
-    np.load("../Data/male right arm mesh data.npz")
+    np.load(cfg.models.data)
 mesh_verticies = imported_data["mesh_verticies"]
 mesh_faces = imported_data["mesh_faces"]
 

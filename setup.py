@@ -22,6 +22,6 @@ setup(
                       "jupyterlab==3.5.3", "scipy==1.10.1",
                       "matplotlib==3.7.2", "ipympl==0.9.3", "pyvista==0.41.1",
                       "trame==3.1.0", "trame-vtk==2.5.8",
-                      "trame-vuetify==2.3.1"],
+                      "trame-vuetify==2.3.1", "hydra-core==1.3.2"],
     platforms="windows",
 )
