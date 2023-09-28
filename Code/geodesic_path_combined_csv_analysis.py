@@ -59,14 +59,14 @@ for f in range(0,len(filenames)):
     GP = GeodesicPath(sex,side)
     GP.load_mesh()
     if (len(location_data) > 1):
-        GP.analyze_data(location_data)
+        GP.load_data(location_data)
+        GP.found_distances = GP.calculate_distances()
     else:
         GP.start_x_location = location_data[0,0]
         GP.start_y_location = location_data[0,1]
         GP.end_x_location = location_data[0,2]
         GP.end_y_location = location_data[0,3]
         GP.found_distances = GP.calculate_distances()
-        GP.found_paths = GP.calculate_paths()
     distance_vec = GP.found_distances
     all_data['Distance'] = distance_vec
     thisfile = os.path.basename(filenames[f])
