@@ -46,6 +46,9 @@ for f in range(0,len(filenames)):
     location_data =\
                 pd.read_csv(filenames[f])[["start x", "start y",
                                     "end x", "end y"]].dropna().to_numpy()
+    if (len(location_data) < 1):
+        print('No data, skipping...')
+        continue
     distance_vec = np.tile(0,(len(location_data),1))
     sex = "male"
     sid_trial_match = re.search('(.+?)_',all_data.Contact[0])
