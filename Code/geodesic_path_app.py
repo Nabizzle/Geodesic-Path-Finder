@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import cv2
 import numpy as np
-import pandas as pd
+import polars as pl
 import polyscope as ps
 import potpourri3d as pp3d
 from pynput.keyboard import Key, Controller
@@ -297,8 +297,8 @@ class GeodesicPathApp(ctk.CTk):
         self.uv_array = imported_data["uv_array"]
 
         # import the face data
-        self.face_data = pd.DataFrame(imported_data["face_data"],
-                                      columns=["vertex", "uv", "normal"])
+        self.face_data = pl.from_numpy(imported_data["face_data"],
+                                       schema=["vertex", "uv"])
 
         messagebox.showinfo(
             title="Load Completed", message="Mesh loading finished")
@@ -381,7 +381,7 @@ class GeodesicPathApp(ctk.CTk):
         filename = askopenfilename(initialdir="../Data",
                                    filetypes=[("data files", "*.csv")])
         # Load in data and exclude rows with any missing values
-        location_data = pd.read_csv(filename).dropna()
+        location_data = pl.read_csv(filename).drop_nulls()
         # Split up data into the right class attributes
         self.start_x_location = location_data["start x"].to_numpy()
         self.start_y_location = location_data["start y"].to_numpy()
@@ -461,6 +461,7 @@ class GeodesicPathApp(ctk.CTk):
                 "dist", multi_dist, enabled=True, stripe_size=0.01)
 
         data_dict = {"computed_distances": path_distances}
+        print(data_dict)
         if not path.exists("../Data/output"):
             makedirs("../Data/output")
         savemat("../Data/output/computed distance.mat", data_dict)
@@ -500,8 +501,9 @@ class GeodesicPathApp(ctk.CTk):
             self.uv_array - centroid_uv_location, axis=1)
         nearest_uv_id = distances_to_uvs.argsort()[0]
         nearest_vertex_id = int(
-            self.face_data.loc[self.face_data["uv"] ==
-                               nearest_uv_id]["vertex"].values[0]) - 1
+            self.face_data.filter(
+                pl.col("uv") == nearest_uv_id
+            )["vertex"][0]) - 1
         return nearest_vertex_id
 
     def calculate_path(self) -> None:

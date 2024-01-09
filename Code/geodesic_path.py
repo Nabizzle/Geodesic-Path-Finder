@@ -1,7 +1,7 @@
 from tkinter import messagebox
 import numpy as np
 import potpourri3d as pp3d
-import pandas as pd
+import polars as pl
 import cv2
 from typing import Dict
 from tkinter.filedialog import askopenfilename
@@ -139,8 +139,8 @@ class GeodesicPath():
         self.uv_array = imported_data["uv_array"]
 
         # import the face data
-        self.face_data = pd.DataFrame(imported_data["face_data"],
-                                      columns=["vertex", "uv", "normal"])
+        self.face_data = pl.from_numpy(imported_data["face_data"],
+                                       schema=["vertex", "uv"])
 
     def load_data(self, data: np.ndarray) -> None:
         '''
@@ -267,8 +267,9 @@ class GeodesicPath():
             self.uv_array - centroid_uv_location, axis=1)
         nearest_uv_id = distances_to_uvs.argsort()[0]
         nearest_vertex_id = int(
-            self.face_data.loc[self.face_data["uv"] ==
-                               nearest_uv_id]["vertex"].values[0]) - 1
+            self.face_data.filter(
+                pl.col("uv") == nearest_uv_id
+            )["vertex"][0]) - 1
         return nearest_vertex_id
 
     def calculate_paths(self) -> Dict[str, np.ndarray]:
@@ -334,8 +335,9 @@ class GeodesicPath():
                                    filetypes=[("data files", "*.csv")])
         # Load in data and exclude rows with any missing values
         location_data =\
-            pd.read_csv(filename)[["start x", "start y",
-                                   "end x", "end y"]].dropna().to_numpy()
+            pl.read_csv(filename).drop_nulls()[
+                ["start x", "start y",
+                 "end x", "end y"]].to_numpy()
         # calculate the geodesic information
         self.analyze_data(location_data)
 
