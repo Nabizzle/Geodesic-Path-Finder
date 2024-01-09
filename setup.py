@@ -23,6 +23,6 @@ setup(
                       "matplotlib==3.7.2", "ipympl==0.9.3", "pyvista==0.41.1",
                       "trame==3.1.0", "trame-vtk==2.5.8",
                       "trame-vuetify==2.3.1", "hydra-core==1.3.2",
-                      "polars==0.18.15", "pyarrow==13.0.0"],
+                      "polars==0.20.3", "pyarrow==14.0.2"],
     platforms="windows",
 )
