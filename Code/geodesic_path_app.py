@@ -461,7 +461,6 @@ class GeodesicPathApp(ctk.CTk):
                 "dist", multi_dist, enabled=True, stripe_size=0.01)
 
         data_dict = {"computed_distances": path_distances}
-        print(data_dict)
         if not path.exists("../Data/output"):
             makedirs("../Data/output")
         savemat("../Data/output/computed distance.mat", data_dict)
