@@ -19,7 +19,7 @@ setup(
     install_requires=["customtkinter==5.1.2", "opencv-python==4.7.0.72",
                       "numpy==1.24.2", "pandas==1.5.3", "polyscope==1.3.1",
                       "potpourri3d==0.0.8", "pynput==1.7.6",
-                      "jupyterlab==3.5.3", "scipy==1.10.1",
+                      "jupyterlab==4.1.0", "scipy==1.10.1",
                       "matplotlib==3.7.2", "ipympl==0.9.3", "pyvista==0.41.1",
                       "trame==3.1.0", "trame-vtk==2.5.8",
                       "trame-vuetify==2.3.1", "hydra-core==1.3.2",
