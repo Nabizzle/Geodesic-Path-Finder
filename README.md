@@ -28,7 +28,7 @@ button must be pressed to load in the mesh data. For speed to loading, the mesh 
 [Save Mesh Data notebook](https://github.com/Nabizzle/Geodesic-Path-Finder/blob/main/Code/Save%20Mesh%20Data.ipynb) for how the mesh data is extracted and saved.
 > **Note**
 > 
-> The original location drawings appear to me modeled after a male body so the fit to the female form may not be perfect. Refer to the [UV Mapping](#uv-mapping)
+> The original location drawings are modeled after a male body so the fit to the female form may not be perfect. Refer to the [UV Mapping](#uv-mapping)
 > section for how the meshes were mapped to the location drawings.
 
 The next two rows of the app allow the user to input in pixel values to two locations to measure between. The pixel values start from the top left corner and must
@@ -94,6 +94,20 @@ Data can be manually analyzed by loading in a data numpy array using the load_da
 columns being ending x and y pixel values. You can then use the calculate_distances and calculate_paths methods to find the geodesic distances and paths. The former method outputs a numpy array of distances in the order
 of input data rows. The latter method outputs a dictionary of string path names and Nx3 numpy arrays of path verticies.
 
+# Surface Area Calculation
+This code takes in a drawn boundary and converts it to [UV Coordinates](#uv-mapping).
+![image](https://github.com/CaseFNI/Geodesic-Path-Finder/assets/16357000/f6045840-c516-4fe6-be80-106df99e97fd) ![image](https://github.com/CaseFNI/Geodesic-Path-Finder/assets/16357000/57cc759d-720e-4170-bfec-062ffea919b5)
+
+This border is used to downselect from all possible UV points to only the UV points within and on the border.
+![image](https://github.com/CaseFNI/Geodesic-Path-Finder/assets/16357000/9db7168e-68f4-4c48-bfeb-f04ab55fa9ca)
+
+![image](https://github.com/CaseFNI/Geodesic-Path-Finder/assets/16357000/84117729-0326-4ca1-b867-890c82945ce6)
+
+The corresponding verticies to these UV points are found and reconstructed into a 3D surface
+![screenshot](https://github.com/CaseFNI/Geodesic-Path-Finder/assets/16357000/207e2636-18ab-43ce-beea-8fe68b9e77e6)
+
+This mesh is triangulated and the surface area is found by adding up all of the triangles
+
 # UV Mapping
 UV mapping of the meshes was done in [blender](https://www.blender.org/). This was first done by sculpting male and female anatomy from reference of which
 [Anatomy for Sculptors](https://anatomy4sculptors.com/) was a major source. Once the musculature was sculted, the mesh was fit to the location drawings in two ways
@@ -157,14 +171,15 @@ and other grouping lines usually staring with `o` or `s`. These lines should be 
 - [Python 3.9.0](https://www.python.org/downloads/release/python-390/)
   - [potpourri3d](https://github.com/nmwsharp/potpourri3d) and [polyscope](https://polyscope.run/py/) do not work with newer versions of python
 - [customtkinter version: 5.1.2](https://pypi.org/project/customtkinter/0.3/) ![dependency check for customtkinter](https://img.shields.io/librariesio/release/PyPi/customtkinter/5.1.2)
-- [jupyterlab version: 3.5.3](https://pypi.org/project/jupyterlab/3.5.3) ![dependency check for jupyterlab](https://img.shields.io/librariesio/release/PyPi/jupyterlab/3.5.3)
+- [jupyterlab version: 4.1.0](https://pypi.org/project/jupyterlab/4.1.0) ![dependency check for jupyterlab](https://img.shields.io/librariesio/release/PyPi/jupyterlab/4.1.0)
 - [numpy version: 1.24.2](https://pypi.org/project/numpy/1.24.2) ![dependency check for numpy](https://img.shields.io/librariesio/release/PyPi/numpy/1.24.2)
 - [opencv-python version: 4.7.0.72](https://pypi.org/project/opencv-python/4.7.0.72) ![dependency check for opencv](https://img.shields.io/librariesio/release/PyPi/opencv-python/4.7.0.72)
-- [pandas version: 1.5.3](https://pypi.org/project/pandas/1.5.3) ![dependency check for pandas](https://img.shields.io/librariesio/release/PyPi/pandas/1.5.3)
+- [polars version: 0.20.3](https://pypi.org/project/polars/0.20.3) ![dependency check for pandas](https://img.shields.io/librariesio/release/PyPi/polars/0.20.3)
 - [polyscope version: 1.3.1](https://pypi.org/project/polyscope/1.3.1) ![dependency check for polyscope](https://img.shields.io/librariesio/release/PyPi/polyscope/1.3.1)
 - [potpourri3d version: 0.0.8](https://pypi.org/project/potpourri3d/0.0.8) ![dependency check for potpourri3d](https://img.shields.io/librariesio/release/PyPi/potpourri3d/0.0.8)
 - [pynput version: 1.7.6](https://pypi.org/project/pynput/1.7.6) ![dependency check for pynput](https://img.shields.io/librariesio/release/PyPi/pynput/1.7.6)
 - [scipy version: 1.10.1](https://pypi.org/project/scipy/1.10.1) ![dependency check for scipy](https://img.shields.io/librariesio/release/PyPi/scipy/1.10.1)
+- [pyvista version: 0.41.1](https://pypi.org/project/scipy/0.41.1) ![dependency check for scipy](https://img.shields.io/librariesio/release/PyPi/pyvista/0.41.1)
 
 > **Note**
 > 
