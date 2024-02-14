@@ -29,8 +29,8 @@ class GeodesicPath():
         points using edge flips
     uv_array: ndarray
         numpy array of all of the uv data values of a mesh
-    face_data: DataFrame
-        Pandas DataFrame of the data that make up the faces of the mesh. This
+    lookup_data: DataFrame
+        Polars DataFrame of the data that make up the faces of the mesh. This
         is made by referencing vertex, uv, and normal vector index values from
         the rest of the mesh data.
     start_x_location: float or ndarray
@@ -139,8 +139,8 @@ class GeodesicPath():
         self.uv_array = imported_data["uv_array"]
 
         # import the face data
-        self.face_data = pl.from_numpy(imported_data["face_data"],
-                                       schema=["vertex", "uv"])
+        self.lookup_data = pl.from_numpy(imported_data["lookup_data"],
+                                         schema=["vertex", "uv"])
 
     def load_data(self, data: np.ndarray) -> None:
         '''
@@ -267,7 +267,7 @@ class GeodesicPath():
             self.uv_array - centroid_uv_location, axis=1)
         nearest_uv_id = distances_to_uvs.argsort()[0]
         nearest_vertex_id = int(
-            self.face_data.filter(
+            self.lookup_data.filter(
                 pl.col("uv") == nearest_uv_id
             )["vertex"][0]) - 1
         return nearest_vertex_id

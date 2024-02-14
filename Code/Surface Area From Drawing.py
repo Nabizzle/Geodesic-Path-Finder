@@ -54,9 +54,8 @@ mesh_faces = imported_data["mesh_faces"]
 uv_array = imported_data["uv_array"]
 
 # import the face data
-face_data = pl.DataFrame(imported_data["face_data"],
-                         schema={"vertex": pl.UInt32, "uv": pl.UInt32,
-                                 "normal": pl.UInt32})
+lookup_data = pl.DataFrame(imported_data["lookup_data"],
+                           schema={"vertex": pl.UInt32, "uv": pl.UInt32})
 
 # Load in the Male Right Arm and Find the image dimensions
 img = cv2.imread(cfg.drawing_templates.image, 1)
@@ -98,13 +97,13 @@ indicies_of_sorted_indicies = np.argsort(combined_uv_array)
 sorted_indicies = combined_uv_array[indicies_of_sorted_indicies]
 
 # Make a look up table of one for one UV to Vertex Points
-face_data_reduced = face_data[["vertex", "uv"]].unique()
-face_data_reduced = face_data_reduced.sort(by=['uv'])
+lookup_data_reduced = lookup_data[["vertex", "uv"]].unique()
+lookup_data_reduced = lookup_data_reduced.sort(by=['uv'])
 
 # Find all Verticies at Once and Reorganize the Array Based on the Sort
 sorted_vertex_ids =\
-    face_data_reduced.filter(face_data_reduced['uv']
-                             .is_in(combined_uv_array))["vertex"].to_numpy()
+    lookup_data_reduced.filter(lookup_data_reduced['uv']
+                               .is_in(combined_uv_array))["vertex"].to_numpy()
 
 vertex_ids = np.empty((len(combined_uv_array))).astype(int)
 
