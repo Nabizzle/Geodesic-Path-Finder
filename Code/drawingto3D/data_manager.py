@@ -13,6 +13,8 @@ Methods
 -------
 create_combined_data :
     Takes separate UV maps and lookup tables and combines them.
+find_image_dimensions :
+    Finds the x and y dimensions of a location drawing template
 find_moved_uv_indicies :
     Return only the UVs that are within the location drawing bounds.
 get_mesh_data :
@@ -33,10 +35,11 @@ quickly be used multiple times. An even faster data loading method is
 implimented in `get_mesh_data` which converts to an .npz file that saves on
 data space and loads quickly.
 
-You map also note that face data is used twice. The face data is loaded by
+You may also note that face data is used twice. The face data is loaded by
 `potpourri3d` but it also parsed in `txt_to_dataframe` to return a lookup table
 for each UV on the 2D location drawing to each vertex on the 3D mesh.
 '''
+import cv2
 import numpy as np
 import polars as pl
 import potpourri3d as pp3d
@@ -105,6 +108,33 @@ def create_combined_data(base_uv_data: Tuple[pl.DataFrame, pl.DataFrame],
         combined_lookup_data = pl.concat([combined_lookup_data, moved_lookup])
 
     return (combined_uv_data, combined_lookup_data)
+
+
+def find_image_dimensions(image_name: str,
+                          template_location: str = "../Media"
+                          ) -> Tuple[int, int]:
+    '''
+    Finds the x and y dimensions of a location drawing template.
+
+    Parameters
+    ----------
+    image_name : str
+        The name of a location drawing template.
+    template_location : str
+        The folder location of the drawing templates.
+
+    Returns
+    -------
+    image_x_size : int
+        Width of the drawing template in pixels.
+    image_y_size : int
+        Height of the drawing template in pixels.
+    '''
+    # Find the image dimensions
+    img = cv2.imread(f"{template_location}/{image_name}", 1)
+    image_x_size = img.shape[1]
+    image_y_size = img.shape[0]
+    return (image_x_size, image_y_size)
 
 
 def find_moved_uv_indicies(uv_data: pl.DataFrame) -> Tuple[np.ndarray,
