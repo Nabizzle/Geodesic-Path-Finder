@@ -1,10 +1,10 @@
 from tkinter import messagebox
 import numpy as np
-import potpourri3d as pp3d
 import polars as pl
 import cv2
 from typing import Dict
 from tkinter.filedialog import askopenfilename
+from data_manager import load_mesh
 
 
 class GeodesicPath():
@@ -63,8 +63,6 @@ class GeodesicPath():
         Finds the path between the start and end vertex
     load_data(data)
         Takes an Nx4 numpy array and converts it to start and end points
-    load_mesh()
-        Loads in the mesh and creates the geodesic solver
     uv_to_vertex(centroid_x, centroid_y, image_x_size, image_y_size)
         Converts location drawing pixel value to 3D vertex location
     '''
@@ -110,7 +108,8 @@ class GeodesicPath():
                 message="This sex was not modeled.")
             raise KeyError
 
-        self.load_mesh()
+        (self.distance_solver, self.path_solver,
+         self.uv_array, self.lookup_data) = load_mesh(self.mesh_name)
         # Set the array of starting and ending verticies to empty
         self.path_verticies = None
 
@@ -301,34 +300,6 @@ class GeodesicPath():
         self.start_y_location = data[:, 1]
         self.end_x_location = data[:, 2]
         self.end_y_location = data[:, 3]
-
-    def load_mesh(self) -> None:
-        '''
-        Loads in the mesh and creates the geodesic solver
-
-        Loads in mesh data based on the class attributes for the mesh and
-        creates a distance and path solver for the mesh
-        '''
-        # Load in the mesh numpy data
-        imported_data =\
-            np.load("../Data/" + self.mesh_name.lower() + " mesh data.npz")
-        mesh_verticies = imported_data["mesh_verticies"]
-        mesh_faces = imported_data["mesh_faces"]
-
-        # Create the heat method solver for the mesh
-        self.distance_solver = pp3d.MeshHeatMethodDistanceSolver(
-            mesh_verticies, mesh_faces)
-
-        # create the path solver
-        self.path_solver = pp3d.EdgeFlipGeodesicSolver(
-            mesh_verticies, mesh_faces)
-
-        # Load in uv data
-        self.uv_array = imported_data["uv_array"]
-
-        # import the face data
-        self.lookup_data = pl.from_numpy(imported_data["lookup_data"],
-                                         schema=["vertex", "uv"])
 
     def uv_to_vertex(self, centroid_x: float, centroid_y: float,
                      image_x_size: int, image_y_size: int) -> int:
