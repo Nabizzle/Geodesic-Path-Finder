@@ -53,20 +53,20 @@ class GeodesicPath():
     -------
     __init__(sex, side)
         Sets up the names of the data to load in
-    load_mesh()
-        Loads in the mesh and creates the geodesic solver
-    load_data(data)
-        Takes an Nx4 numpy array and converts it to start and end points
-    calculate_distances()
-        Find the distance between the starting and ending points
-    uv_to_vertex(centroid_x, centroid_y, image_x_size, image_y_size)
-        Converts location drawing pixel value to 3D vertex location
-    calculate_paths()
-        Finds the path between the start and end vertex
     analyze_data(data)
         Loads in data and analyzes it
     analyzed_data_from_csv
         Loads in points to measure between from a file
+    calculate_distances()
+        Find the distance between the starting and ending points
+    calculate_paths()
+        Finds the path between the start and end vertex
+    load_data(data)
+        Takes an Nx4 numpy array and converts it to start and end points
+    load_mesh()
+        Loads in the mesh and creates the geodesic solver
+    uv_to_vertex(centroid_x, centroid_y, image_x_size, image_y_size)
+        Converts location drawing pixel value to 3D vertex location
     '''
     def __init__(self, sex: str = "male", side: str = "right") -> None:
         '''
@@ -114,57 +114,38 @@ class GeodesicPath():
         # Set the array of starting and ending verticies to empty
         self.path_verticies = None
 
-    def load_mesh(self) -> None:
+    def analyze_data(self, data: np.ndarray) -> None:
         '''
-        Loads in the mesh and creates the geodesic solver
+        Loads in data and analyzes it
 
-        Loads in mesh data based on the class attributes for the mesh and
-        creates a distance and path solver for the mesh
-        '''
-        # Load in the mesh numpy data
-        imported_data =\
-            np.load("../Data/" + self.mesh_name.lower() + " mesh data.npz")
-        mesh_verticies = imported_data["mesh_verticies"]
-        mesh_faces = imported_data["mesh_faces"]
-
-        # Create the heat method solver for the mesh
-        self.distance_solver = pp3d.MeshHeatMethodDistanceSolver(
-            mesh_verticies, mesh_faces)
-
-        # create the path solver
-        self.path_solver = pp3d.EdgeFlipGeodesicSolver(
-            mesh_verticies, mesh_faces)
-
-        # Load in uv data
-        self.uv_array = imported_data["uv_array"]
-
-        # import the face data
-        self.lookup_data = pl.from_numpy(imported_data["lookup_data"],
-                                         schema=["vertex", "uv"])
-
-    def load_data(self, data: np.ndarray) -> None:
-        '''
-        Takes an Nx4 numpy array and converts it to start and end points
-
-        These points are used for finding geodesic distances and paths
+        Combines the load and compute steps for ease of use
 
         Parameters
         ----------
         data: ndarray
             The input data from the centroids
-
-        Raises
-        ------
-        TypeError
-            If the data is not a numpy array, this function will not work
         '''
-        if not isinstance(data, np.ndarray):
-            raise TypeError
+        self.load_data(data)
+        self.found_distances = self.calculate_distances()
+        self.found_paths = self.calculate_paths()
 
-        self.start_x_location = data[:, 0]
-        self.start_y_location = data[:, 1]
-        self.end_x_location = data[:, 2]
-        self.end_y_location = data[:, 3]
+    def analyze_data_from_csv(self) -> None:
+        '''
+        Loads in points to measure between from a file
+
+        Loads in predetermined points to find geodesic distances between from
+        a csv file. If there is a missing starting or ending point value, the
+        code ommits that row of points from the loaded in data.
+        '''
+        filename = askopenfilename(initialdir="../Data",
+                                   filetypes=[("data files", "*.csv")])
+        # Load in data and exclude rows with any missing values
+        location_data =\
+            pl.read_csv(filename).drop_nulls()[
+                ["start x", "start y",
+                 "end x", "end y"]].to_numpy()
+        # calculate the geodesic information
+        self.analyze_data(location_data)
 
     def calculate_distances(self) -> np.ndarray:
         '''
@@ -236,42 +217,6 @@ class GeodesicPath():
         print("Distance Calculation Finished")
         return path_distances
 
-    def uv_to_vertex(self, centroid_x: float, centroid_y: float,
-                     image_x_size: int, image_y_size: int) -> int:
-        '''
-        Converts location drawing pixel value to 3D vertex location
-
-        Takes the location drawing's centroid pixel location and converts it
-        to a 3D vertex on the mesh by finding the closest UV value to the pixel
-
-        Parameters
-        ----------
-        centroid_x: float
-            The x pixel value of a location centroid
-        centroid_y: float
-            The y pixel value of a location centroid
-        image_x_size: int
-            The x dimension of the location drawing image in pixels
-        image_y_size: int
-            The y dimension of the location drawing image in pixels
-
-        Returns
-        -------
-        nearest_vertex_id: int
-            The row number of the closest vertex to the 2D centroid
-        '''
-        normalized_x = centroid_x / image_x_size
-        normalized_y = centroid_y / image_y_size
-        centroid_uv_location = np.array([normalized_x, 1 - normalized_y])
-        distances_to_uvs = np.linalg.norm(
-            self.uv_array - centroid_uv_location, axis=1)
-        nearest_uv_id = distances_to_uvs.argsort()[0]
-        nearest_vertex_id = int(
-            self.lookup_data.filter(
-                pl.col("uv") == nearest_uv_id
-            )["vertex"][0]) - 1
-        return nearest_vertex_id
-
     def calculate_paths(self) -> Dict[str, np.ndarray]:
         '''
         Finds the path between the start and end vertex
@@ -307,38 +252,93 @@ class GeodesicPath():
         print("Path Calculation Finished")
         return data_dict
 
-    def analyze_data(self, data: np.ndarray) -> None:
+    def load_data(self, data: np.ndarray) -> None:
         '''
-        Loads in data and analyzes it
+        Takes an Nx4 numpy array and converts it to start and end points
 
-        Combines the load and compute steps for ease of use
+        These points are used for finding geodesic distances and paths
 
         Parameters
         ----------
         data: ndarray
             The input data from the centroids
-        '''
-        self.load_data(data)
-        self.found_distances = self.calculate_distances()
-        self.found_paths = self.calculate_paths()
 
-    def analyze_data_from_csv(self) -> None:
+        Raises
+        ------
+        TypeError
+            If the data is not a numpy array, this function will not work
         '''
-        Loads in points to measure between from a file
+        if not isinstance(data, np.ndarray):
+            raise TypeError
 
-        Loads in predetermined points to find geodesic distances between from
-        a csv file. If there is a missing starting or ending point value, the
-        code ommits that row of points from the loaded in data.
+        self.start_x_location = data[:, 0]
+        self.start_y_location = data[:, 1]
+        self.end_x_location = data[:, 2]
+        self.end_y_location = data[:, 3]
+
+    def load_mesh(self) -> None:
         '''
-        filename = askopenfilename(initialdir="../Data",
-                                   filetypes=[("data files", "*.csv")])
-        # Load in data and exclude rows with any missing values
-        location_data =\
-            pl.read_csv(filename).drop_nulls()[
-                ["start x", "start y",
-                 "end x", "end y"]].to_numpy()
-        # calculate the geodesic information
-        self.analyze_data(location_data)
+        Loads in the mesh and creates the geodesic solver
+
+        Loads in mesh data based on the class attributes for the mesh and
+        creates a distance and path solver for the mesh
+        '''
+        # Load in the mesh numpy data
+        imported_data =\
+            np.load("../Data/" + self.mesh_name.lower() + " mesh data.npz")
+        mesh_verticies = imported_data["mesh_verticies"]
+        mesh_faces = imported_data["mesh_faces"]
+
+        # Create the heat method solver for the mesh
+        self.distance_solver = pp3d.MeshHeatMethodDistanceSolver(
+            mesh_verticies, mesh_faces)
+
+        # create the path solver
+        self.path_solver = pp3d.EdgeFlipGeodesicSolver(
+            mesh_verticies, mesh_faces)
+
+        # Load in uv data
+        self.uv_array = imported_data["uv_array"]
+
+        # import the face data
+        self.lookup_data = pl.from_numpy(imported_data["lookup_data"],
+                                         schema=["vertex", "uv"])
+
+    def uv_to_vertex(self, centroid_x: float, centroid_y: float,
+                     image_x_size: int, image_y_size: int) -> int:
+        '''
+        Converts location drawing pixel value to 3D vertex location
+
+        Takes the location drawing's centroid pixel location and converts it
+        to a 3D vertex on the mesh by finding the closest UV value to the pixel
+
+        Parameters
+        ----------
+        centroid_x: float
+            The x pixel value of a location centroid
+        centroid_y: float
+            The y pixel value of a location centroid
+        image_x_size: int
+            The x dimension of the location drawing image in pixels
+        image_y_size: int
+            The y dimension of the location drawing image in pixels
+
+        Returns
+        -------
+        nearest_vertex_id: int
+            The row number of the closest vertex to the 2D centroid
+        '''
+        normalized_x = centroid_x / image_x_size
+        normalized_y = centroid_y / image_y_size
+        centroid_uv_location = np.array([normalized_x, 1 - normalized_y])
+        distances_to_uvs = np.linalg.norm(
+            self.uv_array - centroid_uv_location, axis=1)
+        nearest_uv_id = distances_to_uvs.argsort()[0]
+        nearest_vertex_id = int(
+            self.lookup_data.filter(
+                pl.col("uv") == nearest_uv_id
+            )["vertex"][0]) - 1
+        return nearest_vertex_id
 
 
 if __name__ == "__main__":
