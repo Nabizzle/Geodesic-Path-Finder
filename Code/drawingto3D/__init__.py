@@ -12,7 +12,8 @@ Modules
 data_manager :
     Converts input mesh data to python usable data tables.
 
-Methods :
+Methods
+-------
 create_combined_data :
     Takes separate UV maps and lookup tables and combines them.
 find_moved_uv_indicies :
