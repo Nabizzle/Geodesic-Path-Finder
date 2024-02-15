@@ -4,7 +4,7 @@ import polars as pl
 import cv2
 from typing import Dict
 from tkinter.filedialog import askopenfilename
-from data_manager import load_mesh
+from drawingto3D.data_manager import load_mesh
 
 
 class GeodesicPath():

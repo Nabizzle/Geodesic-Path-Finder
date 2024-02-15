@@ -17,7 +17,7 @@ import polars as pl
 from tkinter import filedialog
 import os
 import sys
-from Code.drawingto3D.geodesic_path import GeodesicPath
+from drawingto3D.geodesic_path import GeodesicPath
 import re
 
 # Add geodesic path finder to path
