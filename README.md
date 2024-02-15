@@ -19,7 +19,7 @@ values on the drawing correspoind to x, y, z vertex values on the 3D mesh.
 [![GitHub followers](https://img.shields.io/github/followers/Nabizzle?style=social)](https://github.com/Nabizzle)
 ![PyPI - Python Version](https://img.shields.io/badge/python-v3.9-blue)
 
-Find the current documentation [here](http://geodesic-path-finder-documentation.readthedocs.io/) [![Documentation Status](https://readthedocs.org/projects/geodesic-path-finder-documentation/badge/?version=latest)](https://geodesic-path-finder-documentation.readthedocs.io/en/latest/?badge=latest)
+The full documentation of the [API on Read the Docs is found here](http://geodesic-path-finder-documentation.readthedocs.io/) [![Documentation Status](https://readthedocs.org/projects/geodesic-path-finder-documentation/badge/?version=latest)](https://geodesic-path-finder-documentation.readthedocs.io/en/latest/?badge=latest)
 
 # App Description
 The app allow the user to find geodesic distance and path information in multiple ways.
