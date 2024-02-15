@@ -119,6 +119,7 @@ def find_moved_uv_indicies(uv_data: pl.DataFrame) -> Tuple[np.ndarray,
     ----------
     uv_data : pl.DataFrame
         UV data table in the format:
+
         +---+-----+-----+
         | 1 | x1  | y1  |
         +---+-----+-----+
@@ -193,7 +194,6 @@ def get_mesh_data(model_directory: str, obj_file: str,
     The text file is used by the `txt_to_dataframe` method to find the UV data
     and the lookup table from each UV point to each vertex.
     '''
-
     # Read in the mesh into a vertex table and face table
     mesh_verticies, mesh_faces =\
         pp3d.read_mesh(f"{model_directory}/{obj_file}")
@@ -234,11 +234,13 @@ def obj_to_txt(model_directory: str, mesh_file: str) -> None:
     file format.
 
     The saved data has the format on each row:
+
     +----------------+----------+----------+----------+
     | Mesh Data Type | Column 1 | Column 2 | Column 3 |
     +----------------+----------+----------+----------+
 
     The vertex data looks like:
+
     +---+-----+-----+-----+
     | v | x1  | y1  | z1  |
     +---+-----+-----+-----+
@@ -250,6 +252,7 @@ def obj_to_txt(model_directory: str, mesh_file: str) -> None:
     +---+-----+-----+-----+
 
     The UV data has the format:
+
     +----+-----+-----+
     | vt | x1  | y1  |
     +----+-----+-----+
@@ -261,6 +264,7 @@ def obj_to_txt(model_directory: str, mesh_file: str) -> None:
     +----+-----+-----+
 
     The normal data has the format:
+
     +----+-----+-----+-----+
     | vn | x1  | y1  | z1  |
     +----+-----+-----+-----+
@@ -272,6 +276,7 @@ def obj_to_txt(model_directory: str, mesh_file: str) -> None:
     +----+-----+-----+-----+
 
     The face data has the format:
+
     +---+------------------+------------------+------------------+
     | f | v1,1/vt1,1/vn1,1 | v1,2/vt1,2/vn1,2 | v1,3/vt1,3/vn1,3 |
     +---+------------------+------------------+------------------+
@@ -335,11 +340,13 @@ def txt_to_dataframe(model_directory: str,
     analysis and the normal data is dropped because it is not needed.
 
     The text mesh data has the format on each row:
+
     +----------------+----------+----------+----------+
     | Mesh Data Type | Column 1 | Column 2 | Column 3 |
     +----------------+----------+----------+----------+
 
     The vertex data looks like:
+
     +---+-----+-----+-----+
     | v | x1  | y1  | z1  |
     +---+-----+-----+-----+
@@ -351,6 +358,7 @@ def txt_to_dataframe(model_directory: str,
     +---+-----+-----+-----+
 
     The UV data has the format:
+
     +----+-----+-----+
     | vt | x1  | y1  |
     +----+-----+-----+
@@ -362,6 +370,7 @@ def txt_to_dataframe(model_directory: str,
     +----+-----+-----+
 
     The normal data has the format:
+
     +----+-----+-----+-----+
     | vn | x1  | y1  | z1  |
     +----+-----+-----+-----+
@@ -373,6 +382,7 @@ def txt_to_dataframe(model_directory: str,
     +----+-----+-----+-----+
 
     The face data has the format:
+
     +---+------------------+------------------+------------------+
     | f | v1,1/vt1,1/vn1,1 | v1,2/vt1,2/vn1,2 | v1,3/vt1,3/vn1,3 |
     +---+------------------+------------------+------------------+
@@ -385,7 +395,6 @@ def txt_to_dataframe(model_directory: str,
 
     .. note:: There are 3 columns here because every face is a triangle.
     '''
-
     # Load in the text version of the model
     mesh_data =\
         pl.read_csv(f"{model_directory}/{file_name}",
