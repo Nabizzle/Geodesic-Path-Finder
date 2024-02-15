@@ -17,36 +17,36 @@ class GeodesicPath():
 
     Attributes
     ----------
-    drawing_name: str
+    drawing_name : str
         The name of the 2D location drawing template
-    mesh_name: str
+    mesh_name : str
         The name of the mesh to find the geodesic distance and path on
-    distance_solver: MeshHeatMethodDistanceSolver
+    distance_solver : MeshHeatMethodDistanceSolver
         MeshHeatMethodDistanceSolver object for finding geodesic distances
         using the heat method
-    path_solver: EdgeFlipGeodesicSolver
+    path_solver : EdgeFlipGeodesicSolver
         EdgeFlipGeodesicSolver object for showing the geodesic path between two
         points using edge flips
-    uv_array: ndarray
+    uv_array : ndarray
         numpy array of all of the uv data values of a mesh
     lookup_data: DataFrame
         Polars DataFrame of the data that make up the faces of the mesh. This
         is made by referencing vertex, uv, and normal vector index values from
         the rest of the mesh data.
-    start_x_location: float or ndarray
+    start_x_location : float or ndarray
         The x pixel value of the starting location drawing centroid
-    start_y_location: float or ndarray
+    start_y_location : float or ndarray
         The y pixel value of the starting location drawing centroid
-    end_x_location: float or ndarray
+    end_x_location : float or ndarray
         The x pixel value of the starting location drawing centroid
-    end_y_location: float or ndarray
+    end_y_location : float or ndarray
         The y pixel value of the starting location drawing centroid
-    path_verticies: ndarray
+    path_verticies : ndarray
         An array of the start and end vertex numbers for the location drawing
         centriods
-    found_distances: ndarray
+    found_distances : ndarray
         An array of all of the found geodesic distances
-    found_paths: Dict[str, ndarray]
+    found_paths : Dict[str, ndarray]
         A dictionary of each path found labeled by a path number
 
     Methods
@@ -74,9 +74,9 @@ class GeodesicPath():
 
         Parameters
         ----------
-        sex: str, default: male
+        sex : str, default: male
             The visual sex of the mesh (Male or Female)
-        side: str, default: right
+        side : str, default: right
             The arm of the model (right or left)
 
         Raises
@@ -122,7 +122,7 @@ class GeodesicPath():
 
         Parameters
         ----------
-        data: ndarray
+        data : np.ndarray
             The input data from the centroids
         '''
         self.load_data(data)
@@ -156,13 +156,26 @@ class GeodesicPath():
 
         Returns
         -------
-        path_distances: ndarray
+        path_distances : np.ndarray
             The found geodesic distances in order of the input data
 
         Raises
         ------
         ValueError
             If you have not given starting or ending points
+
+        Notes
+        -----
+        The solvers here uses finds the geodesic distance, i.e. the
+        shortest distance between any two points that goes across the mesh.
+        This is done using the Heat Method [1]_.
+
+        References
+        ----------
+        .. [1] Keenan Crane, Clarisse Weischedel, and Max Wardetzky. 2013.
+           Geodesics in heat: A new approach to computing distance based on
+           heat flow. ACM Trans. Graph. 32, 5, Article 152 (September 2013),
+           11 pages https://doi.org/10.1145/2516971.2516977
         '''
         if self.start_x_location is None or self.start_y_location is None:
             print("You have not set any starting points.")
@@ -226,13 +239,26 @@ class GeodesicPath():
 
         Returns
         -------
-        data_dict: Dict(str, np.ndarray)
+        data_dict : Dict(str, np.ndarray)
             The found paths between the input data
 
         Raises
         ------
         ValueError
             If you did not find starting and ending verticies
+
+        Notes
+        -----
+        A solver for the path between these two points uses edge flips to show
+        the path on the mesh [1]_. Note that this path may not be the shortest
+        path, just a demonstration.
+
+        References
+        ----------
+        .. [1] Nicholas Sharp and Keenan Crane. 2020. You can find geodesic
+           paths in triangle meshes by just flipping edges. ACM Trans. Graph.
+           39, 6, Article 249 (December 2020), 15 pages.
+           https://doi.org/10.1145/3414685.3417839
         '''
         if self.path_verticies is None:
             messagebox.showerror(
@@ -260,7 +286,7 @@ class GeodesicPath():
 
         Parameters
         ----------
-        data: ndarray
+        data : ndarray
             The input data from the centroids
 
         Raises
@@ -314,18 +340,18 @@ class GeodesicPath():
 
         Parameters
         ----------
-        centroid_x: float
+        centroid_x : float
             The x pixel value of a location centroid
-        centroid_y: float
+        centroid_y : float
             The y pixel value of a location centroid
-        image_x_size: int
+        image_x_size : int
             The x dimension of the location drawing image in pixels
-        image_y_size: int
+        image_y_size : int
             The y dimension of the location drawing image in pixels
 
         Returns
         -------
-        nearest_vertex_id: int
+        nearest_vertex_id : int
             The row number of the closest vertex to the 2D centroid
         '''
         normalized_x = centroid_x / image_x_size
