@@ -1,12 +1,13 @@
 '''
-Converts input mesh data to python usable data tables.
+Converts input mesh data to python usable data tables and mesh solvers.
 
 Takes in mesh data that contains vertex, UV, normal, and face data. The normal
 data is discarded as it isn't used as of now and the vertex data is easily
 extracted from importing the mesh with `potpourri3d`. The majority of this
 code focuses on extracting and preparing the UV data and formatting the face
 data as a lookup table for finding the connection between each UV and the
-vertex on the 3D mesh.
+vertex on the 3D mesh. The mesh data can also be loaded in as heat method mesh
+solvers for use in finding the geodesic path between any points on the mesh.
 
 Methods
 -------
@@ -16,6 +17,7 @@ find_moved_uv_indicies :
     Return only the UVs that are within the location drawing bounds.
 get_mesh_data :
     Saves out the mesh data from an obj file.
+load_mesh : Loads in the mesh and creates the geodesic solver.
 obj_to_txt :
     Takes in an OBJ mesh file and converts it into a text file.
 txt_to_dataframe :
@@ -184,6 +186,7 @@ def get_mesh_data(model_directory: str, obj_file: str,
     --------
     create_combined_data :
         Takes separate UV maps and lookup tables and combines them.
+    load_mesh : Loads in the mesh and creates the geodesic solver.
     txt_to_dataframe :
         Parses 3D mesh file in text format into the UV data and face lookup
         table.
@@ -206,6 +209,87 @@ def get_mesh_data(model_directory: str, obj_file: str,
     np.savez_compressed("../Data/" + obj_file.lower() + " arm mesh data.npz",
                         mesh_verticies=mesh_verticies, mesh_faces=mesh_faces,
                         uv_array=uv_array, lookup_data=lookup_data)
+
+
+def load_mesh(mesh_name: str,
+              data_path: str = "../Data"
+              ) -> Tuple[pp3d.MeshHeatMethodDistanceSolver,
+                         pp3d.EdgeFlipGeodesicSolver,
+                         np.ndarray, pl.DataFrame]:
+    '''
+    Loads in the mesh and creates the geodesic solver.
+
+    Loads in mesh data based on the class attributes for the mesh and
+    creates a distance and path solver for the mesh
+    One line summary
+
+    Parameters
+    ----------
+    mesh_name : str
+        The name of the mesh, i.e. Male Left Arm, Male Right Arm, Female Left
+        Arm, Female Right Arm.
+    data_path : str
+        The relative path to the data folder containing the .npz file for the
+        mesh data saved from `get_mesh_data`.
+
+    Returns
+    -------
+    distance_solver : pp3d.MeshHeatMethodDistanceSolver
+        Heat method solver for the mesh.
+    path_solver : pp3d.MeshHeatMethodDistanceSolver
+        Geodesic path solver for the mesh.
+    uv_array : np.ndarry
+        The x and y positions of each UV point mapped to the mesh.
+    lookup_data : pl.DataFrame
+        The lookup table to match UV points with mesh verticies.
+
+    Notes
+    -----
+    The solvers created here are used to find the geodesic path, i.e. the
+    shortest path between any two points. This is done using the Heat Method
+    [1]_. A solver for the path between these two points is also made that uses
+    edge flips to show the path on the mesh [2]_. Note that this path may not
+    be the shortest path, just a demonstration.
+
+    References
+    ----------
+    .. [1] Keenan Crane, Clarisse Weischedel, and Max Wardetzky. 2013.
+       Geodesics in heat: A new approach to computing distance based on heat
+       flow. ACM Trans. Graph. 32, 5, Article 152 (September 2013), 11 pages
+       https://doi.org/10.1145/2516971.2516977
+    .. [2] Nicholas Sharp and Keenan Crane. 2020. You can find geodesic paths
+       in triangle meshes by just flipping edges. ACM Trans. Graph. 39, 6,
+       Article 249 (December 2020), 15 pages.
+       https://doi.org/10.1145/3414685.3417839
+
+
+    See Also
+    --------
+    get_mesh_data :
+        Saves out the mesh data from an obj file.
+    '''
+    # Load in the mesh numpy data
+    imported_data =\
+        np.load(f"{data_path}/{mesh_name.lower()} mesh data.npz")
+    mesh_verticies = imported_data["mesh_verticies"]
+    mesh_faces = imported_data["mesh_faces"]
+
+    # Create the heat method solver for the mesh
+    distance_solver =\
+        pp3d.MeshHeatMethodDistanceSolver(mesh_verticies, mesh_faces)
+
+    # create the path solver
+    path_solver =\
+        pp3d.EdgeFlipGeodesicSolver(mesh_verticies, mesh_faces)
+
+    # Load in uv data
+    uv_array = imported_data["uv_array"]
+
+    # import the face data
+    lookup_data = pl.from_numpy(imported_data["lookup_data"],
+                                schema=["vertex", "uv"])
+
+    return (distance_solver, path_solver, uv_array, lookup_data)
 
 
 def obj_to_txt(model_directory: str, mesh_file: str) -> None:
