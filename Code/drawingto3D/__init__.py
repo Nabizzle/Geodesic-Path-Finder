@@ -20,6 +20,7 @@ find_moved_uv_indicies :
     Return only the UVs that are within the location drawing bounds.
 get_mesh_data :
     Saves out the mesh data from an obj file.
+load_mesh : Loads in the mesh and creates the geodesic solver.
 obj_to_txt :
     Takes in an OBJ mesh file and converts it into a text file.
 txt_to_dataframe :
