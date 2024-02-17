@@ -315,7 +315,7 @@ def load_mesh(mesh_name: str,
     # Load in uv data
     uv_array = imported_data["uv_array"]
 
-    # import the face data
+    # import the lookup table
     lookup_data = pl.from_numpy(imported_data["lookup_data"],
                                 schema=["vertex", "uv"])
 
