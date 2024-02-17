@@ -12,11 +12,10 @@ template for where subjects feel touch perception and this library allows the
 user to find the path and path length between any set of points as well as the
 surface area of a drawn location on the 3D model.
 
-Contents
+API Contents
 --------
 .. toctree::
-   :maxdepth: 5
-   :caption: Contents:
+   :maxdepth: 3
 
    modules
 
@@ -26,3 +25,8 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+Geodesic App and Mesh Manipulation
+==================================
+.. toctree::
+   readme
