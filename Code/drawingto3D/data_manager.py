@@ -19,6 +19,7 @@ find_moved_uv_indicies :
     Return only the UVs that are within the location drawing bounds.
 get_mesh_data :
     Saves out the mesh data from an obj file.
+load_data : Retrieves the mesh data from a npz data file.
 load_mesh : Loads in the mesh and creates the geodesic solver.
 obj_to_txt :
     Takes in an OBJ mesh file and converts it into a text file.
@@ -241,6 +242,55 @@ def get_mesh_data(model_directory: str, obj_file: str,
                         uv_array=uv_array, lookup_data=lookup_data)
 
 
+def load_data(mesh_name: str,
+              data_path: str = "../Data"
+              ) -> Tuple[np.ndarray, pl.DataFrame]:
+    '''
+    Retrieves the mesh data from a npz data file.
+
+    Loads in mesh data based on the class attributes for the mesh.
+
+    Parameters
+    ----------
+    mesh_name : str
+        The name of the mesh, i.e. Male Left Arm, Male Right Arm, Female Left
+        Arm, Female Right Arm.
+    data_path : str
+        The relative path to the data folder containing the .npz file for the
+        mesh data saved from `get_mesh_data`.
+
+    Returns
+    -------
+    uv_array : np.ndarry
+        The x and y positions of each UV point mapped to the mesh.
+    lookup_data : pl.DataFrame
+        The lookup table to match UV points with mesh verticies.
+
+    Notes
+    -----
+    This is similar to `load_mesh` but does not create the solvers.
+
+    See Also
+    --------
+    get_mesh_data :
+        Saves out the mesh data from an obj file.
+    load_mesh :
+        Loads in the mesh and creates the geodesic solver.
+    '''
+    # Load in the mesh numpy data
+    imported_data =\
+        np.load(f"{data_path}/{mesh_name.lower()} mesh data.npz")
+
+    # Load in uv data
+    uv_array = imported_data["uv_array"]
+
+    # import the lookup table
+    lookup_data = pl.from_numpy(imported_data["lookup_data"],
+                                schema=["vertex", "uv"])
+
+    return (uv_array, lookup_data)
+
+
 def load_mesh(mesh_name: str,
               data_path: str = "../Data"
               ) -> Tuple[pp3d.MeshHeatMethodDistanceSolver,
@@ -251,7 +301,6 @@ def load_mesh(mesh_name: str,
 
     Loads in mesh data based on the class attributes for the mesh and
     creates a distance and path solver for the mesh
-    One line summary
 
     Parameters
     ----------
@@ -297,6 +346,8 @@ def load_mesh(mesh_name: str,
     --------
     get_mesh_data :
         Saves out the mesh data from an obj file.
+    load_data :
+        Retrieves the mesh data from a npz data file.
     '''
     # Load in the mesh numpy data
     imported_data =\

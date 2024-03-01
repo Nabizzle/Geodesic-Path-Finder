@@ -52,7 +52,7 @@ def clean_uv_border(boundary_uv_array: np.ndarray) -> List[int]:
     [cleaned_boundary_uv_array.append(x)
      for x in boundary_uv_array if x not in cleaned_boundary_uv_array]
 
-    return clean_uv_border
+    return cleaned_boundary_uv_array
 
 
 def convert_uv_to_vertex(uv_indicies: np.ndarray, lookup_data: pl.DataFrame,
