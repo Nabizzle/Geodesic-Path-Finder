@@ -9,6 +9,7 @@ from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
 from typing import Tuple
 from scipy.io import savemat
+from scipy.spatial import KDTree
 from os import path, makedirs
 
 ctk.set_appearance_mode("System")
@@ -295,6 +296,7 @@ class GeodesicPathApp(ctk.CTk):
 
         # Load in uv data
         self.uv_array = imported_data["uv_array"]
+        self.uv_kdtree = KDTree(self.uv_array)
 
         # import the face data
         self.lookup_data = pl.from_numpy(imported_data["lookup_data"],
@@ -464,6 +466,7 @@ class GeodesicPathApp(ctk.CTk):
         if not path.exists("../Data/output"):
             makedirs("../Data/output")
         savemat("../Data/output/computed distance.mat", data_dict)
+        print(data_dict)
 
         messagebox.showinfo(
             title="Calculation Complete",
@@ -496,9 +499,7 @@ class GeodesicPathApp(ctk.CTk):
         normalized_x = centroid_x / image_x_size
         normalized_y = centroid_y / image_y_size
         centroid_uv_location = np.array([normalized_x, 1 - normalized_y])
-        distances_to_uvs = np.linalg.norm(
-            self.uv_array - centroid_uv_location, axis=1)
-        nearest_uv_id = distances_to_uvs.argsort()[0]
+        _, nearest_uv_id = self.uv_kdtree.query(centroid_uv_location)
         nearest_vertex_id = int(
             self.lookup_data.filter(
                 pl.col("uv") == nearest_uv_id

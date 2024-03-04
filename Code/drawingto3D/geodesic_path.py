@@ -1,7 +1,10 @@
 from tkinter import messagebox
 import numpy as np
 import polars as pl
+import progressbar
+from progressbar import ETA, GranularBar, Percentage
 import cv2
+from scipy.spatial import KDTree
 from typing import Dict
 from tkinter.filedialog import askopenfilename
 from drawingto3D.data_manager import load_mesh
@@ -110,6 +113,7 @@ class GeodesicPath():
 
         (self.distance_solver, self.path_solver,
          self.uv_array, self.lookup_data) = load_mesh(self.mesh_name)
+        self.uv_kdtree = KDTree(self.uv_array)
         # Set the array of starting and ending verticies to empty
         self.path_verticies = None
 
@@ -190,36 +194,45 @@ class GeodesicPath():
         # iterate through each location set
         if isinstance(self.start_x_location, np.ndarray):
             self.path_verticies = np.array([])
-            for i in range(len(self.start_x_location)):
-                # Find the UV location of the start and end points
-                start_vertex_id = self.uv_to_vertex(
-                    self.start_x_location[i], self.start_y_location[i],
-                    image_x_size, image_y_size)
-                end_vertex_id = self.uv_to_vertex(
-                    self.end_x_location[i], self.end_y_location[i],
-                    image_x_size, image_y_size)
+            with progressbar.ProgressBar(max_value=len(self.start_x_location),
+                                         widgets=[Percentage(), " ",
+                                                  GranularBar(), " ", ETA(),]
+                                         ) as bar:
+                for i in range(len(self.start_x_location)):
+                    # Find the UV location of the start and end points
+                    centroid =\
+                        np.array([[self.start_x_location[i],
+                                   self.start_y_location[i]],
+                                  [self.end_x_location[i],
+                                   self.end_y_location[i]]])
+                    start_vertex_id, end_vertex_id =\
+                        self.uv_to_vertex(
+                            centroid, image_x_size, image_y_size)
 
-                # Find distance from the start and end points to all others
-                dist = self.distance_solver.compute_distance(start_vertex_id)
-                if i == 0:
-                    self.path_verticies = np.array(
-                        [[start_vertex_id, end_vertex_id]])
-                    path_distances = np.array([dist[end_vertex_id]])
-                else:
-                    self.path_verticies = np.append(
-                        self.path_verticies,
-                        [[start_vertex_id, end_vertex_id]], 0)
-                    path_distances = np.append(
-                        path_distances, [dist[end_vertex_id]], 0)
+                    # Find distance from the start and end points to all others
+                    dist =\
+                        self.distance_solver.compute_distance(start_vertex_id)
+                    if i == 0:
+                        self.path_verticies = np.array(
+                            [[start_vertex_id, end_vertex_id]])
+                        path_distances = np.array([dist[end_vertex_id]])
+                    else:
+                        self.path_verticies = np.append(
+                            self.path_verticies,
+                            [[start_vertex_id, end_vertex_id]], 0)
+                        path_distances = np.append(
+                            path_distances, [dist[end_vertex_id]], 0)
+                    bar.update(i)
 
         else:
             # Find the UV location of the start and end points
-            start_vertex_id = self.uv_to_vertex(
-                self.start_x_location, self.start_y_location, image_x_size,
-                image_y_size)
-            end_vertex_id = self.uv_to_vertex(
-                self.end_x_location, self.end_y_location, image_x_size,
-                image_y_size)
+            centroid =\
+                np.array([[self.start_x_location[i],
+                           self.start_y_location[i]],
+                          [self.end_x_location[i],
+                           self.end_y_location[i]]])
+            start_vertex_id, end_vertex_id =\
+                self.uv_to_vertex(centroid, image_x_size, image_y_size)
 
             # Find distance from the start and end points to all others
             self.path_verticies = np.array([[start_vertex_id, end_vertex_id]])
@@ -301,7 +314,7 @@ class GeodesicPath():
         self.end_x_location = data[:, 2]
         self.end_y_location = data[:, 3]
 
-    def uv_to_vertex(self, centroid_x: float, centroid_y: float,
+    def uv_to_vertex(self, centroid: np.ndarray,
                      image_x_size: int, image_y_size: int) -> int:
         '''
         Converts location drawing pixel value to 3D vertex location
@@ -311,10 +324,8 @@ class GeodesicPath():
 
         Parameters
         ----------
-        centroid_x : float
-            The x pixel value of a location centroid
-        centroid_y : float
-            The y pixel value of a location centroid
+        centroid : np.ndarray
+            The x and y pixel values of a start and end location centroid
         image_x_size : int
             The x dimension of the location drawing image in pixels
         image_y_size : int
@@ -323,19 +334,20 @@ class GeodesicPath():
         Returns
         -------
         nearest_vertex_id : int
-            The row number of the closest vertex to the 2D centroid
+            The row numbers of the closest vertex to the start and end
+            2D centroids
         '''
-        normalized_x = centroid_x / image_x_size
-        normalized_y = centroid_y / image_y_size
-        centroid_uv_location = np.array([normalized_x, 1 - normalized_y])
-        distances_to_uvs = np.linalg.norm(
-            self.uv_array - centroid_uv_location, axis=1)
-        nearest_uv_id = distances_to_uvs.argsort()[0]
-        nearest_vertex_id = int(
-            self.lookup_data.filter(
-                pl.col("uv") == nearest_uv_id
-            )["vertex"][0]) - 1
-        return nearest_vertex_id
+        centroid_uv_location = np.zeros((2, 2))
+        centroid_uv_location[:, 0] = centroid[:, 0] / image_x_size
+        centroid_uv_location[:, 1] = 1 - (centroid[:, 1] / image_y_size)
+        _, nearest_uv_ids = self.uv_kdtree.query(centroid_uv_location)
+        start_vertex_id = self.lookup_data.filter(
+            pl.col("uv") == nearest_uv_ids[0]
+            )["vertex"][0]
+        end_vertex_id = self.lookup_data.filter(
+            pl.col("uv") == nearest_uv_ids[1]
+            )["vertex"][0]
+        return start_vertex_id, end_vertex_id
 
 
 if __name__ == "__main__":
