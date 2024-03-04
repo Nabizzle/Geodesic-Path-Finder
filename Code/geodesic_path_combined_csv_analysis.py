@@ -16,6 +16,7 @@ import numpy as np
 import polars as pl
 from tkinter import filedialog
 import os
+from pathlib import Path
 import sys
 from drawingto3D.geodesic_path import GeodesicPath
 import re
@@ -46,7 +47,7 @@ for file in filenames:
         continue
     distance_vec = np.tile(0, (len(location_data), 1))
     sex = "male"
-    sid_trial_match = re.search('(.+?)_', all_data.Contact[0])
+    sid_trial_match = re.search('(.+?)_', all_data["Contact"][0])
     sid_trial = sid_trial_match.group(1)
     amp_side_trial = amp_side[SID.index(sid_trial)]
     if amp_side_trial == "Right hand":
@@ -55,7 +56,6 @@ for file in filenames:
         side = "left"
     print(side)
     GP = GeodesicPath(sex, side)
-    GP.load_mesh()
     if (len(location_data) > 1):
         GP.load_data(location_data)
         GP.found_distances = GP.calculate_distances()
@@ -66,11 +66,13 @@ for file in filenames:
         GP.end_y_location = location_data[0, 3]
         GP.found_distances = GP.calculate_distances()
     distance_vec = GP.found_distances
-    all_data['Distance'] = distance_vec
+    all_data = all_data.with_columns(
+        pl.lit(distance_vec).alias("Distance")
+    )
     thisfile = os.path.basename(file)
     saveoutpath = "../Data/output/"
-    saveoutfilename = 'ComputedDistances_'+thisfile
-    fullfilename = os.path.join(saveoutpath, saveoutfilename)
-    fid = open(fullfilename, "w")
-    all_data.to_csv(fid, sep=',', index=False, header=True)
-    fid.close()
+    saveoutfilename = 'ComputedDistances_' + thisfile
+    fullfilepath = Path(f"{saveoutpath}/{saveoutfilename}")
+    fullfilepath.parent.mkdir(exist_ok=True, parents=True)
+    with open(fullfilepath, "w") as f:
+        all_data.write_csv(f, include_header=True)
