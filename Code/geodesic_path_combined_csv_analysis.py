@@ -56,15 +56,9 @@ for file in filenames:
         side = "left"
     print(side)
     GP = GeodesicPath(sex, side)
-    if (len(location_data) > 1):
-        GP.load_data(location_data)
-        GP.found_distances = GP.calculate_distances()
-    else:
-        GP.start_x_location = location_data[0, 0]
-        GP.start_y_location = location_data[0, 1]
-        GP.end_x_location = location_data[0, 2]
-        GP.end_y_location = location_data[0, 3]
-        GP.found_distances = GP.calculate_distances()
+    GP.load_data(location_data)
+    GP.found_distances = GP.calculate_distances()
+
     distance_vec = GP.found_distances
     all_data = all_data.with_columns(
         pl.lit(distance_vec).alias("Distance")
