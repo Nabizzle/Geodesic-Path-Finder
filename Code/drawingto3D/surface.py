@@ -123,7 +123,7 @@ def convert_uv_to_vertex_id(uv_indicies: np.ndarray, lookup_data: pl.DataFrame,
     return vertex_ids
 
 
-def create_surface(location_surface: np.ndarray) -> pv.PolyData:
+def create_surface(location_surface: np.ndarray, alpha: float) -> pv.PolyData:
     '''
     Create a 3D surface from the location drawing verticies.
 
@@ -131,6 +131,8 @@ def create_surface(location_surface: np.ndarray) -> pv.PolyData:
     ----------
     location_surface : np.ndarray
         A Nx3 array of each vertex that make up the drawn location in 3D.
+    alpha : float
+        The distance value for the `delaunay_2d` method.
 
     Returns
     -------
@@ -140,7 +142,7 @@ def create_surface(location_surface: np.ndarray) -> pv.PolyData:
     # Convert the mesh into a point cloud
     cloud = pv.PolyData(location_surface)
     # Triangulate the 3D Mesh with short triangles
-    volume = cloud.delaunay_2d(alpha=0.05)
+    volume = cloud.delaunay_2d(alpha=alpha)
     shell = volume.extract_geometry()
 
     return shell
