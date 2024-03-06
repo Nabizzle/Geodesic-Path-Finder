@@ -78,6 +78,35 @@ def convert_uv_to_vertex(uv_indicies: np.ndarray, lookup_data: pl.DataFrame,
     location_surface : np.ndarray
         A Nx3 array of each vertex that make up the drawn location in 3D.
     '''
+    vertex_ids = convert_uv_to_vertex_id(uv_indicies, lookup_data)
+
+    # Get the values of all of the verticies
+    location_surface = np.array(mesh_verticies[vertex_ids])
+
+    return location_surface
+
+
+def convert_uv_to_vertex_id(uv_indicies: np.ndarray, lookup_data: pl.DataFrame,
+                            ) -> np.ndarray:
+    '''
+    Take the UVs in the location drawing and return the verticies surface.
+
+    Takes the row values of the UVs contained by the location drawing and
+    find the corresponding verticies of the 3D mesh that make up the surface
+    made by the location drawing in 3D.
+
+    Parameters
+    ----------
+    uv_indicies : np.ndarray
+        The row values of the UVs that make up the location drawing.
+    lookup_data : pl.DataFrame
+        The lookup table for finding which UVs go to which verticies.
+
+    Returns
+    -------
+    location_surface : np.ndarray
+        A Nx3 array of each vertex that make up the drawn location in 3D.
+    '''
     # Sort the UV indicies
     lookup_data_reduced = lookup_data[["vertex", "uv"]].unique()
     lookup_data_reduced = lookup_data_reduced.sort(by=['uv'])
@@ -91,10 +120,7 @@ def convert_uv_to_vertex(uv_indicies: np.ndarray, lookup_data: pl.DataFrame,
     for index, value in enumerate(indicies_of_sorted_indicies):
         vertex_ids[value] = sorted_vertex_ids[index]
 
-    # Get the values of all of the verticies
-    location_surface = np.array(mesh_verticies[vertex_ids])
-
-    return location_surface
+    return vertex_ids
 
 
 def create_surface(location_surface: np.ndarray) -> pv.PolyData:

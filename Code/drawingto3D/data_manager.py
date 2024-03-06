@@ -244,7 +244,7 @@ def get_mesh_data(model_directory: str, obj_file: str,
 
 def load_data(mesh_name: str,
               data_path: str = "../Data"
-              ) -> Tuple[np.ndarray, pl.DataFrame]:
+              ) -> Tuple[np.ndarray, pl.DataFrame, np.ndarray]:
     '''
     Retrieves the mesh data from a npz data file.
 
@@ -288,7 +288,7 @@ def load_data(mesh_name: str,
     lookup_data = pl.from_numpy(imported_data["lookup_data"],
                                 schema=["vertex", "uv"])
 
-    return (uv_array, lookup_data)
+    return (uv_array, lookup_data, imported_data)
 
 
 def load_mesh(mesh_name: str,
