@@ -5,7 +5,8 @@
 
 # Requirements
 '''
-    Python 3.9.0 - potpourri3d and polyscope do not work with newer versions of python
+    Python 3.9.0 - potpourri3d and polyscope do
+    not work with newer versions of python
     customtkinter version: 5.1.2 dependency check for customtkinter
     jupyterlab version: 3.5.3 dependency check for jupyterlab
     numpy version: 1.24.2 dependency check for numpy
@@ -22,12 +23,10 @@ import numpy as np
 import matplotlib.path as mpltPath
 import pandas as pd
 import cv2
-import math
 from tkinter import filedialog
-import sys
 import os
-import re
 from scipy.spatial import KDTree
+import scipy.io as sio
 import pyvista as pv
 
 
@@ -58,66 +57,69 @@ def find_uv_index_kdtree(border_points: pd.DataFrame, image_x_size: int,
     return indicies
 
 
-# Add geodesic path finder to path
-try:
-    sys.path.append("D:\GitHub\Geodesic-Path-Finder")
-except:
-    folderpath = filedialog.askdirectory()
-    sys.path.append(folderpath)
-
-
 # Load in border(s) from csv file(s) (Sprompt user)
-filepaths = filedialog.askopenfilenames(title="Please select .csv file of UV map border coordinates", filetypes=[("CSV Files", "*.csv")])
+filepath = (filedialog.askopenfilenames(
+    title="Please select .mat file of UV map border coordinates",
+    filetypes=[("MAT Files", "*.mat")]))
+mat_data = sio.loadmat(filepath)
+mat_data.head()
+donotsave = 0
+
+# Load in male arm mesh data
+meshdata_left = np.load("male left arm mesh data.npz")
+meshdata_right = np.load("male right arm mesh data.npz")
 
 # Initialize surface area and label arrays
-SA = np.zeros(len(filepaths))
-trialnum = np.tile(0,len(filepaths))
-locationnum = np.tile(0,len(filepaths))
+SA = np.zeros(len(mat_data))
+trialnum = np.tile(0, len(mat_data))
 
-for i in range(0,len(filepaths)):
+''' Initialize average estimate conversion info
+    reference: https://msis.jsc.nasa.gov/sections/section03.htm
+    reference from the reference:  AMRL-TR-74-102 Churchill,
+    E. Sampling and Data Gathering Strategies for Future USAF
+    Anthropometry Webb Associates, Inc. A/F Aerospace Medical Res 2-76 '''
+hand_length_avg_male = 19.3  # cm, tip of D3 to thenar eminance-wrist junction
+hand_length_blender = 1.34604  # arbitrary units (m)
+ratio_hand_length = hand_length_avg_male/hand_length_blender  # cm/au
+ratio_hand_area = ratio_hand_length**2  # cm^2/au^2
 
-    try:
-        trial_filename = os.path.basename(filepaths[i])
-        search_trial = re.search('_trial(.+?)_',trial_filename)
-        trialnum[i] = int(search_trial.group(1))
-        search_location = re.search('_location(.+?).csv',trial_filename)
-        locationnum[i] = int(search_location.group(1))
-        donotsave = 0
-    except: 
-        donotsave = 1
+for i in range(0, len(mat_data)):
 
-    data = pd.read_csv(filepaths[i])
-    data.head()
+    # Get boundary data
+    data = mat_data[i].Boundaries
+    trialnum[i] = i
 
-    # Load in male arm mesh data
-    imported_data = np.load(filedialog.askopenfilename(title="Please select mesh data (.npz)", filetypes=[("NPZ Files", "*.npz")]))
-
+    # Get mesh data and image data
+    if mat_data[i].AmputationSite == "Right hand":
+        imported_data = meshdata_right
+        img = (cv2.imread(
+            r'D:\GitHub\Geodesic-Path-Finder\Media\right arm.png', 1))
+    else:
+        imported_data = meshdata_left
+        img = (cv2.imread(
+            r'D:\GitHub\Geodesic-Path-Finder\Media\left arm.png', 1))
     mesh_verticies = imported_data["mesh_verticies"]
     mesh_faces = imported_data["mesh_faces"]
+
+    # Get image dimensions
+    image_x_size = img.shape[1]
+    image_y_size = img.shape[0]
 
     # Load in uv data
     uv_array = imported_data["uv_array"]
 
     # import the face data
-    face_data = pd.DataFrame(imported_data["face_data"],
-                            columns=["vertex", "uv", "normal"])
+    face_data = (pd.DataFrame(
+        imported_data["face_data"], columns=["vertex", "uv", "normal"]))
 
-    # Load in male right arm
-    # Find the image dimensions
-    try:
-        img = cv2.imread(r'D:\GitHub\Geodesic-Path-Finder\Media\right arm.png', 1)
-    except:
-        img = cv2.imread(filedialog.askopenfilename(title="Please select .png file for the arm image that corresponds to the UV map", filetypes=[("PNG Files", "*.png")]), 1)
-    image_x_size = img.shape[1]
-    image_y_size = img.shape[0]
-
-    # Convert the boundary pixel values to their corresponding indices in the UV array
+    # Convert the boundary pixel values to their corresponding uv indices
     boundary_uv_array = []
-    boundary_uv_array = find_uv_index_kdtree(data,image_x_size,image_y_size)
+    boundary_uv_array = find_uv_index_kdtree(data, image_x_size, image_y_size)
 
     # Delete duplicate UV array indices
     cleaned_boundary_uv_array = []
-    [cleaned_boundary_uv_array.append(x) for x in boundary_uv_array if x not in cleaned_boundary_uv_array]
+    [cleaned_boundary_uv_array.append(x) for x in boundary_uv_array if (
+        x not in cleaned_boundary_uv_array)]
 
     # Check the original boundary vs the UV boundaries
     path = uv_array[cleaned_boundary_uv_array]
@@ -125,7 +127,7 @@ for i in range(0,len(filepaths)):
     # Find the UV points inside the UV boundary
     boundary = mpltPath.Path(path)
     inside_boundary = boundary.contains_points(uv_array)
-    
+
     # Triangluate the Found Mesh
     # This is so we can apply the same triangulation to the 3D mesh
 
@@ -134,8 +136,8 @@ for i in range(0,len(filepaths)):
     combined_uv_array.extend(inside_boundary_ids)
 
     combined_uv_array_unique = []
-    [combined_uv_array_unique.append(x) for x in combined_uv_array
-    if x not in combined_uv_array_unique]
+    [combined_uv_array_unique.append(x) for x in combined_uv_array if (
+        x not in combined_uv_array_unique)]
 
     combined_uv_array = np.array(combined_uv_array_unique)
     location_uvs = np.array(uv_array[combined_uv_array])
@@ -154,8 +156,8 @@ for i in range(0,len(filepaths)):
     face_data_reduced[face_data_reduced['uv'].isin(combined_uv_array)]
 
     sorted_vertex_ids =\
-        face_data_reduced[face_data_reduced['uv']
-                        .isin(combined_uv_array)]["vertex"].to_numpy()
+        face_data_reduced[face_data_reduced['uv'].
+                          isin(combined_uv_array)]["vertex"].to_numpy()
 
     vertex_ids = np.empty((len(combined_uv_array))).astype(int)
 
@@ -168,33 +170,25 @@ for i in range(0,len(filepaths)):
     # Find the Surface Area of the 3D Location Drawing
     # Convert the mesh into a point cloud
     cloud = pv.PolyData(location_surface)
+
     # Triangulate the 3D Mesh with short triangles
     volume = cloud.delaunay_2d(alpha=0.05)
     shell = volume.extract_geometry()
-                
-    if donotsave==0:
-        print(f"The area of the drawn location for trial {trialnum[i]} location {locationnum[i]} is {shell.area} scene units")
 
-        norm_area = shell.area / 27.1458
-        print(f"The normalized area of the drawn location for trial {trialnum[i]} location {locationnum[i]} is {norm_area} [fraction] or {norm_area*100}% [percent]")
-    else:
-        print(f"The area of the drawn location is {shell.area} scene units")
+    # Scale to cm based on average male size
+    norm_area = shell.area*ratio_hand_area
 
-        norm_area = shell.area / 27.1458
-        print(f"The normalized area of the drawn location is {norm_area} [fraction] or {norm_area*100}% [percent]")
-    
+    SA[i] = norm_area
 
-    SA[i] = shell.area
-
-
-if donotsave==0:
+if donotsave == 0:
     # Create file to write to
-    newfilename = input("Please type the filename you would like to save out: ")
-    pathname = "D:\GitHub\HandDatabase"
-    fullfilename = os.path.join(pathname,newfilename)
-    fid = open(fullfilename,"w")
-    SADataFrame = pd.DataFrame({'RowNum': trialnum,'LocationNum': locationnum,'SA': SA})
-    SADataFrame.to_csv(fid,sep=',',index=False,header=True)
+    newfilename = input(
+        "Please type the filename you would like to save out: ")
+    pathname = r'D:\GitHub\HandDatabase'
+    fullfilename = os.path.join(pathname, newfilename)
+    fid = open(fullfilename, "w")
+    SADataFrame = pd.DataFrame({'RowNum': trialnum, 'SA': SA})
+    SADataFrame.to_csv(fid, sep=',', index=False, header=True)
 
 # Close file
 fid.close()
