@@ -370,7 +370,7 @@ def load_mesh(mesh_name: str,
     lookup_data = pl.from_numpy(imported_data["lookup_data"],
                                 schema=["vertex", "uv"])
 
-    return (distance_solver, path_solver, uv_array, lookup_data)
+    return (distance_solver, path_solver, uv_array, lookup_data, imported_data)
 
 
 def obj_to_txt(model_directory: str, mesh_file: str) -> None:

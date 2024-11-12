@@ -8,6 +8,15 @@ from scipy.spatial import KDTree
 from typing import Dict
 from tkinter.filedialog import askopenfilename
 from drawingto3D.data_manager import load_mesh
+from potpourri3d import compute_distance as compute_distance
+from pathos.multiprocessing import ProcessingPool as Pool
+import time
+
+
+def solve(mesh_vertices, mesh_faces, start_ind, end_ind):
+    dist = compute_distance(mesh_vertices, mesh_faces, start_ind)
+    distance = dist[end_ind]
+    return distance
 
 
 class GeodesicPath():
@@ -69,7 +78,8 @@ class GeodesicPath():
     uv_to_vertex(centroid_x, centroid_y, image_x_size, image_y_size)
         Converts location drawing pixel value to 3D vertex location
     '''
-    def __init__(self, sex: str = "male", side: str = "right") -> None:
+    def __init__(self, p: Pool, sex: str = "male",
+                 side: str = "right") -> None:
         '''
         Sets up the names of the data to load in
 
@@ -88,6 +98,7 @@ class GeodesicPath():
         # make all input data lowercase
         sex = sex.lower()
         side = side.lower()
+        self.p = p
 
         if side == "right":
             self.drawing_name = "right arm.png"
@@ -112,7 +123,7 @@ class GeodesicPath():
             raise KeyError
 
         (self.distance_solver, self.path_solver,
-         self.uv_array, self.lookup_data) =\
+         self.uv_array, self.lookup_data, self.imported_data) =\
             load_mesh(self.mesh_name)
         self.uv_kdtree = KDTree(self.uv_array)
         # Set the array of starting and ending verticies to empty
@@ -207,10 +218,27 @@ class GeodesicPath():
                                      ) as bar:
             verticies = []
             path_distances = []
-            for i, vert in enumerate(start_vertex_ids):
+            mesh_vertices =\
+                np.repeat(
+                    self.imported_data["mesh_verticies"][np.newaxis, ...],
+                    len(start_vertex_ids), axis=0)
+            mesh_faces = np.repeat(
+                self.imported_data["mesh_faces"][np.newaxis, ...],
+                len(start_vertex_ids), axis=0)
+            t1 = time.perf_counter(), time.process_time()
+            path_distances =\
+                self.p.map(solve,
+                           mesh_vertices,
+                           mesh_faces,
+                           start_vertex_ids,
+                           end_vertex_ids)
+            t2 = time.perf_counter(), time.process_time()
+            print(f" Real time: {t2[0] - t1[0]:.2f} seconds")
+            print(f" CPU time: {t2[1] - t1[1]:.2f} seconds")
+            for i, ind in enumerate(start_vertex_ids):
                 # Find distance from the each start point to all others
-                dist = self.distance_solver.compute_distance(vert)
-                path_distances.append(dist[end_vertex_ids[i]])
+                # dist = self.distance_solver.compute_distance(ind)
+                # path_distances.append(dist[end_vertex_ids[i]])
                 verticies.append([start_vertex_ids[i], end_vertex_ids[i]])
                 bar.update(i)
 
